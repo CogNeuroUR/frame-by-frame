@@ -1,6 +1,8 @@
 Frame-by-frame classification
 =======================================================
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/CogNeuroUR/frame-by-frame/blob/main/video_frame_extractor_v0_1_2.ipynb)
+
 * Having a collection of videos with pre-defined "true" categories and a pretrained classifier:
     1. extract each frame of each video;
     2. perform a classification of each individual frame;
