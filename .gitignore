@@ -4,5 +4,7 @@ data/MIT_sampleVideos_RAW/*
 # Prevent from uploading .DS_Store
 data/.DS_Store
 .DS_Store
+# Prevent from uploading ignore/ folder
+_ignore/
 # Prevent from uploading pretrained models (.pth files)
 *.pth
