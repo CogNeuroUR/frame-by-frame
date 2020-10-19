@@ -1,2 +1,8 @@
 # Prevent from uploading MIT_sampleVideos_RAW folder
-data/MIT_sampleVideos_RAW/
+data/MIT_sampleVideos_RAW/*
+!data/MIT_sampleVideos_RAW/jogging
+# Prevent from uploading .DS_Store
+data/.DS_Store
+.DS_Store
+# Prevent from uploading pretrained models (.pth files)
+*.pth
