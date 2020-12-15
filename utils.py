@@ -1,10 +1,15 @@
 # Imports
+import os
 from pathlib import Path
 
+# Video processing
+import cv2
+from moviepy.editor import ImageSequenceClip
+
 import numpy as np
+from scipy.cluster.hierarchy import dendrogram
 
-import matplotlib.pyplot as plt
-
+from matplotlib import pyplot as plt
 ################################################################################
 # Load categories (MiTv1)
 ################################################################################
@@ -151,6 +156,7 @@ def topN_categories(accuracy_array, N=5,
         ax.set_ylabel('Prediction accuracy (softmax)')
         plt.show()
     return topN
+
 ################################################################################
 # topN_per_file
 ################################################################################
@@ -229,3 +235,185 @@ def topN_per_file(accuracies_dict, N=3,
     else:
         return np.array(l_categories)[indices], np.array(topN).T
 
+################################################################################
+# best_worst
+################################################################################
+def best_worst(accuracies_dict,
+               category_name='applauding',
+               video_fname='yt-bX3KmVN89Co_1.mp4',
+               verbose = False):
+    """
+    Function to extract best and worst frames per file, given an accuracies dictionary,
+    the name of the category and file to be examined:
+    Required structure of the accuracies_dict is:
+        {category_name : {video_fname : []}}
+    """
+    # load categories
+    l_categories = load_categories()
+    
+    cat_idx = [i for i in range(len(l_categories))
+               if l_categories[i] == category_name][0]
+
+    # Extract accuracies as (n_frames, 1) arrays
+    per_frame_accuracies = np.array(accuracies_dict[category_name][video_fname])
+
+    ass = per_frame_accuracies.reshape((per_frame_accuracies.shape[0],
+                                            len(list(accuracies_dict.keys()))))
+    ass = ass[:, cat_idx]
+    if verbose:
+        print(f'\t{video_fname} : Max/Min accuracy at frame:' \
+        f' {np.argmax(ass)}/{np.argmin(ass)}' \
+        f' with value: {ass[np.argmax(ass)]}' \
+        f' / {ass[np.argmin(ass)]}')
+
+    # Determined the index of the frame w/ max accuracy and write to dict
+    best_frame = (np.argmax(ass), ass[np.argmax(ass)])
+    worst_frame = (np.argmin(ass), ass[np.argmin(ass)])
+    
+    return best_frame, worst_frame
+
+################################################################################
+# Dendrogram plotting (scikit-learn.org)
+################################################################################
+def plot_dendrogram(model, **kwargs):
+    # Create linkage matrix and then plot the dendrogram
+
+    # create the counts of samples under each node
+    counts = np.zeros(model.children_.shape[0])
+    n_samples = len(model.labels_)
+    for i, merge in enumerate(model.children_):
+        current_count = 0
+        for child_idx in merge:
+            if child_idx < n_samples:
+                current_count += 1  # leaf node
+            else:
+                current_count += counts[child_idx - n_samples]
+        counts[i] = current_count
+
+    linkage_matrix = np.column_stack([model.children_, model.distances_,
+                                      counts]).astype(float)
+
+    # Plot the corresponding dendrogram
+    dendrogram(linkage_matrix, **kwargs)
+    
+################################################################################
+# GIF writting using moviepy
+################################################################################
+
+def gif(filename, array, fps=10, scale=1.0):
+    """Creates a gif given a stack of images using moviepy
+    Notes
+    -----
+    works with current Github version of moviepy (not the pip version)
+    https://github.com/Zulko/moviepy/commit/d4c9c37bc88261d8ed8b5d9b7c317d13b2cdf62e
+    Usage
+    -----
+    >>> X = randn(100, 64, 64)
+    >>> gif('test.gif', X)
+    Parameters
+    ----------
+    filename : string
+        The filename of the gif to write to
+    array : array_like
+        A numpy array that contains a sequence of images
+    fps : int
+        frames per second (default: 10)
+    scale : float
+        how much to rescale each image by (default: 1.0)
+    """
+
+    # ensure that the file has the .gif extension
+    fname, _ = os.path.splitext(filename)
+    filename = fname + '.gif'
+
+    # copy into the color dimension if the images are black and white
+    if array.ndim == 3:
+        array = array[..., np.newaxis] * np.ones(3)
+
+    # make the moviepy clip
+    if scale != 1.0:
+        clip = ImageSequenceClip(list(array), fps=fps).resize(scale)
+    else:
+        clip = ImageSequenceClip(list(array), fps=fps)
+    clip.write_gif(filename, fps=fps, program='ffmpeg') #, program='ffmpeg') # or 'ImageMagick'
+    return clip
+
+#%% ############################################################################
+# Three-frame differencing for motion detection
+################################################################################
+def outlaw_search(frames_array, threshold_value=25e6):
+    """
+    Function to search for "drastic" changes in a video segment based on "Frame
+    Differencing. The outlaw criterion is based on the maximum value of the gradient of the
+    frame-to-frame differences.
+    
+    Parameters:
+    ---------------
+    frames_array : ndarray (n_frames, height, width, n_channels)
+        Array containing the frames of the video.
+    threshold_value : int (optional)
+        Value above which the video segment is subjected to exclusion.
+    """
+    # Compute three-frame differencing along the frames
+    l_diffs_sum = []
+    l_diffs = []
+    for j in range(len(frames_array)):
+        if j > 0:
+            frame1 = frames_array[j-1]
+            frame2 = frames_array[j]
+            diffs = cv2.absdiff(frame1, frame2)
+            l_diffs_sum.append(np.sum(diffs))
+            l_diffs.append(diffs)
+    # Check if differences are bigger than threshold
+    if np.absolute(np.gradient(l_diffs_sum)).max() > threshold_value:
+        return True
+    else:
+        return False
+
+#%% ############################################################################
+# Distance matrix computation (required for sklearn's AggClust)
+################################################################################
+def get_distances(X,model,mode='l2'):
+    distances = []
+    weights = []
+    children=model.children_
+    dims = (X.shape[1],1)
+    distCache = {}
+    weightCache = {}
+    for childs in children:
+        c1 = X[childs[0]].reshape(dims)
+        c2 = X[childs[1]].reshape(dims)
+        c1Dist = 0
+        c1W = 1
+        c2Dist = 0
+        c2W = 1
+        if childs[0] in distCache.keys():
+            c1Dist = distCache[childs[0]]
+            c1W = weightCache[childs[0]]
+        if childs[1] in distCache.keys():
+            c2Dist = distCache[childs[1]]
+            c2W = weightCache[childs[1]]
+        d = np.linalg.norm(c1-c2)
+        cc = ((c1W*c1)+(c2W*c2))/(c1W+c2W)
+
+        X = np.vstack((X,cc.T))
+
+        newChild_id = X.shape[0]-1
+
+        # How to deal with a higher level cluster merge with lower distance:
+        if mode=='l2':  # Increase the higher level cluster size suing an l2 norm
+            added_dist = (c1Dist**2+c2Dist**2)**0.5 
+            dNew = (d**2 + added_dist**2)**0.5
+        elif mode == 'max':  # If the previrous clusters had higher distance, use that one
+            dNew = max(d,c1Dist,c2Dist)
+        elif mode == 'actual':  # Plot the actual distance.
+            dNew = d
+
+
+        wNew = (c1W + c2W)
+        distCache[newChild_id] = dNew
+        weightCache[newChild_id] = wNew
+
+        distances.append(dNew)
+        weights.append( wNew)
+    return distances, weights

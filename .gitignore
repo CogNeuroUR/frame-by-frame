@@ -17,3 +17,25 @@ __pycache__/
 # Prevent from uploading saved files
 saved/*
 !saved/ResNet50_MiTv1_accuracies_per_category.pkl
+
+# Ignore beta & old
+beta_*
+old_*
+
+# Ignore extracted
+best_and_worst_frames_RN50MiTv1/
+
+# Outputs
+outputs/*
+
+# Plots
+plots/*
+!/plots/best&worst+top5/cutting_yt-UgO4jE-puiE_67.mp4/
+
+!plots/hierarchical_clustering/
+plots/hierarchical_clustering/*
+!plots/hierarchical_clustering/silhouette_idx_analysis/
+
+
+#
+Kabulska_SilhouetteIdx_scripts/
