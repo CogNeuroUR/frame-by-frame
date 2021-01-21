@@ -110,6 +110,30 @@ subset = np.array(l_best)[subset_idxs]
 for category, file_name, best in subset:
   print(category, file_name)
 
+#%% Copy the subset for comparison
+import shutil
+i=0
+out_folder = Path(f'data/resizing_tests/subset/').absolute()
+# Check if exist, if not, make one
+os.makedirs(out_folder, exist_ok=True)
+for category, file_name, best in subset:
+    # Verbose 
+    print(f'{i}/{len(subset)}')
+  
+    # Load video file using decord
+    path_2_file = str(Path(f'data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{file_name}').absolute())    
+    # Get width
+    if os.path.exists(path_2_file):
+        vr = VideoReader(str(path_2_file))
+        original_width = vr.get_batch([0]).shape[1]
+        
+        output_file = str(out_folder / f'ow{original_width}_{category}_{file_name}')
+        
+        shutil.copyfile(src=path_2_file,
+                        dst=output_file)
+    i += 1
+    
+
 #%% GIFs with decord + moviepy
 # Parameters: ==============================================
 start = time.time()
@@ -248,119 +272,3 @@ for file_name in files_subset:
 stop = time.time()
 duration = stop-start
 print(f'\nTime spent: {duration:.2f}s (~ {duration/N:.3f}s per file)')
-
-#%% Start resizing  
-start = time.time()
-# Parameters: ==============================================
-width = 960 #mean_width
-out_folder = Path(f'data/resizing_tests/comparison/').absolute()
-# ==========================================================
-
-i = 0
-l_cats = [] 
-for category, file_name, best in subset:
-    # Verbose 
-    print(f'{i}/{len(subset)}')
-  
-    path_2_file = str(Path(f'data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{file_name}').absolute())
-    output_file = str(out_folder / f'w{width}_{category}_{file_name}')
-    subprocess.call(
-    ['ffmpeg', '-i', path_2_file,  '-vf', f'scale={width}:-2', output_file])
-    #print('file %s saved' % out_file)
-    i += 1
-stop = time.time()
-duration = stop-start
-print(f'\nTime spent: {duration:.2f}s (~ {duration/N:.3f}s per file)')
-
-#%% Copy the subset for comparison
-import shutil
-i=0
-for category, file_name, best in subset:
-    # Verbose 
-    print(f'{i}/{len(subset)}')
-  
-    # Load video file using decord
-    path_2_file = str(Path(f'data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{file_name}').absolute())    
-    # Get width
-    if os.path.exists(path_2_file):
-        vr = VideoReader(str(path_2_file))
-        original_width = vr.get_batch([0]).shape[1]
-        
-        output_file = str(out_folder / f'ow{original_width}_{category}_{file_name}')
-        
-        shutil.copyfile(src=path_2_file,
-                        dst=output_file)
-    i += 1
-
-#%% ############################################################################
-# Search for (black) border containing videos
-################################################################################
-#%% Sweep through videos
-
-start = time.time()
-# Parameters: ==============================================
-l_borders = []
-# ==========================================================
-
-def has_border(im):
-    bg = Image.new(im.mode, im.size, im.getpixel((0,0)))
-    diff = ImageChops.difference(im, bg)
-    #diff = ImageChops.add(diff, diff, 2.0, -100)
-    diff = ImageChops.add(diff, diff)      
-    bbox = diff.getbbox()
-    return bbox != (0,0,im.size[0],im.size[1])
-
-i = 0
-l_cats = [] 
-for category, file_name, best in l_sorted_best:
-    # Verbose 
-    print(f'{i}/{len(l_sorted_best)}')
-  
-    
-    # Load video file using decord
-    path_2_file = Path(f'data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{file_name}')
-    
-    # Check if file exists:
-    if os.path.exists(path_2_file):
-      #vr = VideoReader(str(path_2_file))
-      cap = cv2.VideoCapture(str(path_2_file))
-      
-      # Get sizes
-      #frame = vr.get_batch([0]).asnumpy()[0]
-      _, frame = cap.read()
-      """
-      #img = cv2.imread('sofwin.png')
-      gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
-      _,thresh = cv2.threshold(gray,1,255,cv2.THRESH_BINARY)
-
-      contours,hierarchy = cv2.findContours(thresh,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-      cnt = contours[0]
-      x,y,w,h = cv2.boundingRect(cnt)
-      """
-      #print(f'{category}/{file_name}')
-      #print(frame.shape)
-      #print(has_border(Image.fromarray(frame)))
-      
-      """
-      plt.imshow(frame)
-      plt.show()
-      """
-      if has_border(Image.fromarray(frame)):
-        l_borders.append([category, file_name])
-          
-    
-      i+=1
-stop = time.time()
-duration = stop-start
-print(f'\nTime spent: {duration:.2f}s (~ {duration/N:.2f}s per file)')
-
-# %%
-print(l_borders)
-
-# %%
-bordered_df = pd.DataFrame(l_borders, columns=['Categories', 'File names'])
-print(bordered_df)
-#%%
-bordered_df.to_csv('outputs/RAW_DOWNSIZING_IN_PROGRESS_bordered_videos.csv')
-
-# %%
