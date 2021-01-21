@@ -5,6 +5,7 @@ data/MIT_sampleVideos_RAW/*
 data/MIT_sampleVideos_RAW_test
 data/MIT_sampleVideos_25FPS
 data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS
+data/resizing_tests
 
 # Prevent from uploading .DS_Store
 data/.DS_Store
@@ -46,3 +47,6 @@ Kabulska_SilhouetteIdx_scripts/
 
 # Workspaces
 .R*
+
+# Spreadsheets
+spreadsheets

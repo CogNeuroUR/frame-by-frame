@@ -302,7 +302,7 @@ def plot_dendrogram(model, **kwargs):
 # GIF writting using moviepy
 ################################################################################
 
-def gif(filename, array, fps=10, scale=1.0):
+def gif(filename, array, fps=10, scale=1.0, scale_width=None):
     """Creates a gif given a stack of images using moviepy
     Notes
     -----
@@ -333,8 +333,10 @@ def gif(filename, array, fps=10, scale=1.0):
         array = array[..., np.newaxis] * np.ones(3)
 
     # make the moviepy clip
-    if scale != 1.0:
+    if scale != 1.0 and scale_width==None:
         clip = ImageSequenceClip(list(array), fps=fps).resize(scale)
+    elif scale_width != None:
+            clip = ImageSequenceClip(list(array), fps=fps).resize(width=scale_width)
     else:
         clip = ImageSequenceClip(list(array), fps=fps)
     clip.write_gif(filename, fps=fps, program='ffmpeg') #, program='ffmpeg') # or 'ImageMagick'
