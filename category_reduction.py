@@ -119,7 +119,7 @@ plt.show()
 
 # %% Silhouette's Index to find the "best" value for n_clusters
 l_silhouette = []
-linkage = 'single' #'complete' #'ward' gives the highest cophenetic 
+linkage = 'ward' #'complete' #'ward' gives the highest cophenetic 
 for N in range(50,260):
     model = cluster.AgglomerativeClustering(n_clusters=N,
                                             linkage=linkage)
@@ -147,6 +147,24 @@ model = cluster.AgglomerativeClustering(n_clusters=l_silhouette[np.array(l_silho
 model.fit(rdm_original)
 print(model.n_clusters)
 
+#%% Save clustering results as a nested list (last version [06.01.21])
+l_nested_categories = []
+temp = np.array(labels)
+
+for i in range(max(model.labels_)):
+    cat = temp[model.labels_ == i]
+    x = []
+    for label in cat:
+        x.append(label)
+        
+    l_nested_categories.append(x)
+print(l_nested_categories)
+
+#%% Save as csv file
+nested_clusters = pd.DataFrame(l_nested_categories)
+path_to_csv = f'outputs/clusters_hc_ward_{model.n_clusters}.csv'
+nested_clusters.to_csv(path_to_csv)
+
 #%% Linkage matrix (manually computed)
 # Manually compute linkage matrix, 'cause sklearn's AggClust does not return
 # model.distances_ when the n_clusters is defined
@@ -155,6 +173,11 @@ distances, weights = utils.get_distances(rdm_original, model, 'max')
 Z = np.column_stack([model.children_, distances, weights]).astype(float)
 
 #%% Plot clustering dendrogram 
+from random import randint
+colors = []
+for i in range(340):
+    colors.append('#%06X' % randint(0, 0xFFFFFF))
+
 plt.figure(figsize=(5,20), num='Dendrogram')
 R = dendrogram(
                 Z,
@@ -168,8 +191,18 @@ R = dendrogram(
                 #color_threshold=1.1, # 1.7
                 above_threshold_color='lightgray',
                 show_contracted=True,
-                leaf_font_size=3.
+                #leaf_font_size=3.,
+                #link_color_func=lambda k: colors[k]
           )
+
+import matplotlib as mpl
+from matplotlib.pyplot import cm
+from scipy.cluster import hierarchy
+
+# cmap = cm.hsv(np.linspace(0, 10, 306)) # seems to work
+cmap = cm.jet(np.linspace(0, 1, 256)) # seems to work
+hierarchy.set_link_color_palette([mpl.colors.rgb2hex(rgb[:3]) for rgb in cmap])
+
 # Align ticklabels to right
 axes = plt.gca()
 #axes.set_xticklabels(axes.get_xticklabels(), ha='right')
@@ -182,3 +215,93 @@ axes.set_title(f'Dendrogram ({linkage} linkage) for max(SI) and n_clusters = {l_
 plt.tight_layout()
 plt.show()
 print(len(axes.get_yticklabels()))
+
+#%%
+
+hierarchy.set_link_color_palette([mpl.colors.rgb2hex(rgb[:3]) for rgb in cmap])
+
+################################################################################
+# Save clusters
+# %% 
+l_nested_clusters = []
+for cluster in np.unique(model.labels_):
+    print(f'Cluster {cluster} with {np.array(labels)[np.where(model.labels_ == cluster)]}')
+    l_nested_clusters.append(list(np.array(labels)[np.where(model.labels_ == cluster)]))
+
+# %%
+#print(l_nested_clusters)
+df_clusters = pd.DataFrame(l_nested_clusters)
+print(df_clusters)
+#%%
+path_to_csv = 'outputs/clusters_hc_ward.csv'
+df_clusters.to_csv(path_to_csv)
+
+#%%
+R['ivl']
+
+#%%
+from collections import defaultdict
+from matplotlib.colors import rgb2hex, colorConverter
+cluster_idxs = defaultdict(list)
+for c, pi in zip(R['color_list'], R['icoord']):
+    for leg in pi[1:3]:
+        i = (leg - 5.0) / 10.0
+        if abs(i - int(i)) < 1e-5:
+            cluster_idxs[c].append(int(i))
+
+cluster_idxs
+
+class Clusters(dict):
+    def _repr_html_(self):
+        html = '<table style="border: 0;">'
+        for c in self:
+            hx = rgb2hex(colorConverter.to_rgb(c))
+            html += '<tr style="border: 0;">' \
+            '<td style="background-color: {0}; ' \
+                       'border: 0;">' \
+            '<code style="background-color: {0};">'.format(hx)
+            html += c + '</code></td>'
+            html += '<td style="border: 0"><code>' 
+            html += repr(self[c]) + '</code>'
+            html += '</td></tr>'
+
+        html += '</table>'
+
+        return html
+    
+def get_cluster_classes(den, label='ivl'):
+    cluster_idxs = defaultdict(list)
+    for c, pi in zip(den['color_list'], den['icoord']):
+        for leg in pi[1:3]:
+            i = (leg - 5.0) / 10.0
+            if abs(i - int(i)) < 1e-5:
+                cluster_idxs[c].append(int(i))
+
+    cluster_classes = Clusters()
+    for c, l in cluster_idxs.items():
+        i_l = [den[label][i] for i in l]
+        cluster_classes[c] = i_l
+
+    return cluster_classes
+
+get_cluster_classes(R)
+nested_clusters = get_cluster_classes(R)
+
+#%%
+l_nested_clusters = []
+for color in nested_clusters.keys():
+    l_nested_clusters.append(nested_clusters[color])
+    #l_nested_clusters.append(labels[cluster_idxs[color]])
+print(l_nested_clusters)
+# %%
+df_clusters = pd.DataFrame(l_nested_clusters)
+print(df_clusters)
+#%%
+path_to_csv = 'outputs/clusters_hc_ward.csv'
+df_clusters.to_csv(path_to_csv)
+# %%
+# %%
+for item in nested_clusters.items():
+    print(item)
+    print('\n\n')
+# %%

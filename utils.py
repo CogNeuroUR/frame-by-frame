@@ -1,9 +1,11 @@
 # Imports
 import os
+import sys
 from pathlib import Path
 
 # Video processing
-import cv2
+if sys.version_info[1] != 8:
+    import cv2
 from moviepy.editor import ImageSequenceClip
 
 import numpy as np

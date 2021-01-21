@@ -1,6 +1,11 @@
 # Prevent from uploading MIT_sampleVideos_RAW folder
+data/
 data/MIT_sampleVideos_RAW/*
 !data/MIT_sampleVideos_RAW/jogging
+data/MIT_sampleVideos_RAW_test
+data/MIT_sampleVideos_25FPS
+data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS
+
 # Prevent from uploading .DS_Store
 data/.DS_Store
 .DS_Store
@@ -19,7 +24,7 @@ saved/*
 !saved/ResNet50_MiTv1_accuracies_per_category.pkl
 
 # Ignore beta & old
-beta_*
+#beta_*
 old_*
 
 # Ignore extracted
@@ -36,6 +41,8 @@ plots/*
 plots/hierarchical_clustering/*
 !plots/hierarchical_clustering/silhouette_idx_analysis/
 
-
-#
+# Auxiliar code
 Kabulska_SilhouetteIdx_scripts/
+
+# Workspaces
+.R*
