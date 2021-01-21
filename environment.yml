@@ -1,0 +1,11 @@
+name: opencv
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - opencv
+  - ipykernel
+  - pandas
+  - scikit-learn
+  - seaborn
+  - jupyterlab
