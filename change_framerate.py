@@ -25,14 +25,6 @@ path_output = Path('data/TEST_FPS').absolute()
 if not os.path.exists(path_output):
   os.makedirs(path_output)
 
-#%% Define function to keep audio
-def HasAudioStreams( file_path ):
-    streams = ffmpeg.probe(file_path)["streams"]
-    for stream in streams:
-        if stream["codec_type"] == "audio":
-            return True
-    return False
-
 #%% Sweep through files in subfolders of path_input
 l_videos = []
 for path, subdirs, files in os.walk(path_input):
