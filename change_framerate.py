@@ -1,26 +1,26 @@
 # [02.02.21] OV
 # Script to change framerate of videos given a parent folder
 #%%#############################################################################
+# OV 10.02.21
+# Make sure to switch to stock (3.8.2) python which has access to homebrew
+# installation of the ffmpeg -> let's us encode back into h264 (no visual loss)
+################################################################################
+
+#%%#############################################################################
 # Imports
 ################################################################################
 import time
-import ffmpeg
 from pathlib import Path
 import pickle
 import os
-import sys, importlib
-sys.path.insert(0, '..')
-import utils
-
-#%% Reload If modified during runtime
-importlib.reload(utils)
+import sys
 
 ################################################################################
 #%% Sweep through videos
 ################################################################################
 #%% Paths
-path_input = Path('data/MIT_sampleVideos_RAW_WORK_IN_PROGRESS').absolute()
-path_output = Path('data/TEST_FPS').absolute()
+path_input = Path('data/MIT_sampleVideos_RAW_final').absolute()
+path_output = Path('data/MIT_sampleVideos_RAW_final_25FPS').absolute()
 
 if not os.path.exists(path_output):
   os.makedirs(path_output)
@@ -49,7 +49,7 @@ start = time.time()
 
 j = 0
 i = 0
-for category, file_name in l_videos[:1]:
+for category, file_name in l_videos:
   # Verbose
   print(f'{j}/{len(l_videos)}'); j+=1
 
@@ -65,13 +65,15 @@ for category, file_name in l_videos[:1]:
     os.remove(path_output_file)
   
   if keep_audio == False: # Do not keep audio
-    l_cmd = ['ffmpeg', '-i', path_input_file, '-r', str(i_fps), '-c:v', 'copy', '-an', '-y', path_output_file]
+    #l_cmd = ['ffmpeg', '-i', path_input_file, '-r', str(i_fps), '-c:v', 'copy', '-an', '-y', path_output_file]
+    l_cmd = ['ffmpeg', '-i', path_input_file, '-c:v', 'libx264', '-r', str(i_fps), '-an', '-y', path_output_file]
     
     out = subprocess.call(l_cmd)
     if out != 0:
       print('Error at ', [category, file_name])
   else: # Keep audio
-    l_cmd = ['ffmpeg', '-i', path_input_file, '-r', str(i_fps), '-c:v', 'copy', '-y', path_output_file]
+    #l_cmd = ['ffmpeg', '-i', path_input_file, '-r', str(i_fps), '-c:v', 'copy', '-y', path_output_file]
+    l_cmd = ['ffmpeg', '-i', path_input_file, '-c:v', 'libx264', '-r', str(i_fps), '-y', path_output_file]
     
     out = subprocess.call(l_cmd)
     if out != 0:

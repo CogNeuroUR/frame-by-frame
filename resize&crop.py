@@ -1,36 +1,13 @@
-# [13.01.21] OV
-################################################################################
-# Imports
-################################################################################
-#%% Imports
-from __future__ import print_function
-# Image/video manipulation
-import cv2
-# Path and sys related
-import os
-import sys
-import importlib
-import time
-import subprocess
-from pathlib import Path
-# Data types & numerics
-import numpy as np
-import pandas as pd
-# My utils
-sys.path.insert(0, '..')
-import utils
-
-#%% # Reload If modified during runtime
-importlib.reload(utils) 
-
+#%%#############################################################################
+# OV 10.02.21
+# Make sure to switch to stock (3.8.2) python which has access to homebrew
+# installation of the ffmpeg -> let's us encode back into h264 (no visual loss)
 ################################################################################
 #%% Sweep through videos
-################################################################################
-#%% Paths
 from pathlib import Path
 
-path_input = Path('data/MIT_sampleVideos_RAW_WORK_IN_PROGRESS').absolute()
-path_output = Path('data/TEST_RESIZE&CROP').absolute()
+path_input = Path('data/MIT_sampleVideos_RAW_final_25FPS/').absolute()
+path_output = Path('data/MIT_sampleVideos_RAW_final_25FPS_480x360p').absolute()
 
 if not os.path.exists(path_output):
   os.makedirs(path_output)
@@ -79,14 +56,15 @@ import subprocess
 start = time.time()
 # Parameters: ==============================================
 out_width = 480 #mean_width
-j = 0
-i = 0
 # ==========================================================   
-        
-for category, file_name in l_videos[:100]:
-    # Verbose
-  print(f'{j}/{len(l_videos)}'); j+=1
 
+for i in range(len(l_videos)):
+  # Verbose
+  if i%50 == 0:
+    print(f'{i}/{len(l_videos)}')
+
+  category, file_name = l_videos[i]
+  
   # Define paths
   path_input_file = str(path_input / category/ file_name)
   path_output_file = str(path_output / category / file_name)
@@ -120,5 +98,65 @@ for category, file_name in l_videos[:100]:
 stop = time.time()
 duration = stop-start
 print(f'\nTime spent: {duration:.2f}s (~ {duration/i:.3f}s per file)')
+
+# %% Test each output video if has the correct size (w/ decord)
+import time
+import cv2
+import subprocess
+
+for category, file_name in l_videos:
+  # Define path
+  path_input_file = str(path_output / category / file_name)
+  path_output_file = str(path_output / category / 'temp.mp4')
+  
+  # Create output category directory if not present
+  if not os.path.exists(path_input_file):
+    print(category, file_name, ' does NOT exist!')
+  else:
+    vcap = cv2.VideoCapture(path_input_file)
+    width  = int(vcap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(vcap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    
+    # Exact cropping command
+    cmd = ['ffmpeg', '-i', path_input_file, '-vcodec', 'libx264',
+           '-filter:v', 'crop=480:360', '-y', path_output_file]
+    if width != 480:
+      print(category, file_name, f' has wrong width ({width})!')
+      
+      print('\tCroping to exactly 480x360p...')
+      if subprocess.call(cmd) != 0:
+        raise Exception(f'Failed croping!')
+      
+      # Remove input and rename temp to input
+      os.remove(path_input_file)
+      os.rename(path_output_file, path_input_file)
+    
+    if height != 360:
+      print(category, file_name, f' has wrong height ({height})!')
+      
+      print('\tCroping to exactly 480x360p...')
+      if subprocess.call(cmd) != 0:
+        raise Exception(f'Failed croping!')
+      
+      # Remove input and rename temp to input
+      os.remove(path_input_file)
+      os.rename(path_output_file, path_input_file)
+    
+print('Test finished!')
+
+# %% For statistics
+path_output = Path('data/MIT_sampleVideos_RAW_final_25FPS_480x360p').absolute()
+l_processed = []
+for path, subdirs, files in os.walk(path_output):
+  for name in files:
+    if name[-3:] == 'mp4':
+      l_processed.append([path.split('/')[-1],   # category
+                       name])                    # file name
+    else:
+      print('Ignored: ', name)
+
+if l_processed:
+  l_processed = sorted(l_processed)
+print('Total nr. of MP4s: ', len(l_processed))
 
 # %%

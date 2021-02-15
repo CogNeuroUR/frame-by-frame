@@ -339,7 +339,8 @@ def gif(filename, array, fps=10, scale=1.0, scale_width=None):
             clip = ImageSequenceClip(list(array), fps=fps).resize(width=scale_width)
     else:
         clip = ImageSequenceClip(list(array), fps=fps)
-    clip.write_gif(filename, fps=fps, program='ffmpeg') #, program='ffmpeg') # or 'ImageMagick'
+    #clip.write_gif(filename, fps=fps, program='ffmpeg') #, program='ffmpeg') # or 'ImageMagick'
+    clip.write_gif(filename, fps=fps, progress_bar=False)
     return clip
 
 #%% ############################################################################
