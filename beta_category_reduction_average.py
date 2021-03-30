@@ -107,6 +107,15 @@ path_to_output = Path('outputs/')
 df = pd.DataFrame(data=features_softmax)
 df.to_csv(path_to_output/'RN50_features_softmax_average.csv')
 
+#%%
+path_to_csv = 'outputs/rdm_average_softmax_cosine.csv'
+df = pd.read_csv(path_to_csv)
+
+#%% Load  Matrix adn Labels
+labels= list(df.columns)[1:]
+metric = 'cosine'
+rdm_original = df.values[:,1:307]
+
 ################################################################################
 # %% Self-similarity matrix
 ################################################################################
@@ -175,6 +184,12 @@ plt.xticks(fontsize=2)
 plt.suptitle('Distance matrix of average softmax classification probabilities per category')
 plt.show()
 
+#%%
+from scipy.cluster.hierarchy import ward, fcluster
+linked = linkage(rdm_original, 'ward')
+
+x = fcluster(linked, t=, criterion='distance')
+print(np.unique(x)[-1])
 ################################################################################
 # %% Hierarchical Clustering Dendrogram (Simple)
 ################################################################################
@@ -183,7 +198,7 @@ linked = linkage(rdm_original, 'ward')
 labelList = labels
 
 plt.figure(figsize=(20, 5))
-dendrogram(
+d = dendrogram(
             linked,
             orientation='top',
             labels=labelList,

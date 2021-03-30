@@ -74,11 +74,17 @@ sns.heatmap(rdm_original, ax=ax, cmap="GnBu", #linewidths=0.01,
             xticklabels=labels,
             yticklabels=labels)
 
-
 plt.yticks(fontsize=2)
 plt.xticks(fontsize=2)
-plt.suptitle('Distance matrix of average softmax classification probabilities per category')
+plt.title('Average Softmax probabilities per MiTv1 category (ResNet50) ')
 plt.show()
+
+#%% Vanilla HCAPerform HierClust with the best n_clusters
+model = cluster.AgglomerativeClustering(n_clusters=None,
+                                        linkage='complete', #'ward', #'complete',
+                                        distance_threshold=0)
+model.fit(rdm_original)
+print(model.n_clusters)
 
 ################################################################################
 # %% Cophenetic distance to findout the best linkage method
@@ -208,8 +214,8 @@ axes = plt.gca()
 #axes.set_xticklabels(axes.get_xticklabels(), ha='right')
 axes.tick_params(axis='x', labelsize=7)
 # Set title
-axes.set_title(f'Dendrogram ({linkage} linkage) for max(SI) and n_clusters = {l_silhouette[np.array(l_silhouette)[:, 1].argmax(axis=0)][0]}',
-               fontsize=8)
+#axes.set_title(f'Dendrogram ({linkage} linkage) for max(SI) and n_clusters = {l_silhouette[np.array(l_silhouette)[:, 1].argmax(axis=0)][0]}',
+#               fontsize=8)
 # Set colors (not working properly)
 #[t.set_color(i) for (i,t) in zip(R['color_list'],axes.xaxis.get_ticklabels())]
 plt.tight_layout()
