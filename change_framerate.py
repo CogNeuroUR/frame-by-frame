@@ -1,107 +1,93 @@
-# [16.12.20] OV
-# Script to change framerate of videos
-
+# [02.02.21] OV
+# Script to change framerate of videos given a parent folder
+#%%#############################################################################
+# OV 10.02.21
+# Make sure to switch to stock (3.8.2) python which has access to homebrew
+# installation of the ffmpeg -> let's us encode back into h264 (no visual loss)
 ################################################################################
+
+#%%#############################################################################
 # Imports
 ################################################################################
-#%%
 import time
-import ffmpeg
 from pathlib import Path
 import pickle
 import os
-
-#%% Import custom utils
-import sys, importlib
-sys.path.insert(0, '..')
-import utils
-importlib.reload(utils) # Reload If modified during runtime
+import sys
 
 ################################################################################
 #%% Sweep through videos
 ################################################################################
 #%% Paths
-path_test = Path('data/test')
-dict_path = Path('saved/full/accuracies_per_category_full_mitv1.pkl')
-# Load from file
-f = open(dict_path, 'rb')
-accuracies_per_category = pickle.load(f)
-l_categories = utils.load_categories()
+path_input = Path('data/MIT_sampleVideos_RAW_final').absolute()
+path_output = Path('data/MIT_sampleVideos_RAW_final_25FPS').absolute()
 
+if not os.path.exists(path_output):
+  os.makedirs(path_output)
 
-#%%
-path_outputs = Path('data/MIT_sampleVideos_25FPS/')
-if not os.path.exists(path_outputs):
-  os.makedirs(path_outputs)
+#%% Sweep through files in subfolders of path_input
+l_videos = []
+for path, subdirs, files in os.walk(path_input):
+  for name in files:
+    if name[-3:] == 'mp4':
+      l_videos.append([path.split('/')[-1],   # category
+                       name])                 # file name
+    else:
+      print('Ignored: ', name)
 
-#%%
+if l_videos:
+  l_videos = sorted(l_videos)
+print('Total nr. of MP4s: ', len(l_videos))
+
+#%% Sweep through files and change framerate to given i_fps
+import subprocess
+
 i_fps = 25
 keep_audio = True
 
 start = time.time()
 
-def HasAudioStreams( file_path ):
-    streams = ffmpeg.probe(file_path)["streams"]
-    for stream in streams:
-        if stream["codec_type"] == "audio":
-            return True
-    return False
-
 j = 0
 i = 0
-for category in l_categories:
-    # Verbose
-    print(f'{j}/{len(l_categories)}'); j+=1
-    # Load video file using decord
-    l_files = list(accuracies_per_category[category].keys())
+for category, file_name in l_videos:
+  # Verbose
+  print(f'{j}/{len(l_videos)}'); j+=1
+
+  path_input_file = str(path_input / category/ file_name)
+  path_output_file = str(path_output / category / file_name)
+  
+  # Create output category directory if not present
+  if not os.path.exists(path_output / category):
+    os.mkdir(path_output / category)
+  
+  # Remove file in output dir if present
+  if os.path.exists(path_output_file):
+    os.remove(path_output_file)
+  
+  if keep_audio == False: # Do not keep audio
+    #l_cmd = ['ffmpeg', '-i', path_input_file, '-r', str(i_fps), '-c:v', 'copy', '-an', '-y', path_output_file]
+    l_cmd = ['ffmpeg', '-i', path_input_file, '-c:v', 'libx264', '-r', str(i_fps), '-an', '-y', path_output_file]
     
-    # Check if category directory exists
-    path_output_category = Path(f'data/MIT_sampleVideos_25FPS/{category}')
-    if not os.path.exists(path_output_category):
-      os.makedirs(path_output_category)
+    out = subprocess.call(l_cmd)
+    if out != 0:
+      print('Error at ', [category, file_name])
+  else: # Keep audio
+    #l_cmd = ['ffmpeg', '-i', path_input_file, '-r', str(i_fps), '-c:v', 'copy', '-y', path_output_file]
+    l_cmd = ['ffmpeg', '-i', path_input_file, '-c:v', 'libx264', '-r', str(i_fps), '-y', path_output_file]
     
-    # Sweep through file in category
-    for file_name in l_files:
-      # Define paths to input and output files
-      path_input_file = str(Path(f'data/MIT_sampleVideos_RAW_test/{category}/{file_name}'))
-      path_output_file = str(path_outputs / category / file_name)
-      #print(path_output_file)
-      
-      if keep_audio == False: # Do not keep audio
-        (
-            ffmpeg
-            .input(str(path_input_file))
-            .filter('fps', fps=i_fps, round='near')
-            .output(str(path_output_file))
-            .overwrite_output()
-            .run()
-        )
-      else: # Keep audio
-        try:
-          # Load file
-          in_ = ffmpeg.input(path_input_file)
-          # Extract video and audio streams separately
-          a = in_.audio if HasAudioStreams(path_input_file) else None
-          #print(a.)
-          v = in_.video.filter('fps', fps=i_fps, round='near') # change FPS
-          # Save to output file, keeping the audio stream unchanged
-          if a:
-            out = ffmpeg.output(v, a, path_output_file, acodec='copy')
-          else:
-            out = ffmpeg.output(v, path_output_file, acodec='copy')
-          out.run(capture_stdout=True,
-                  capture_stderr=True,
-                  overwrite_output=True)
-        except ffmpeg.Error as e:
-          print('stdout:', e.stdout.decode('utf8'))
-          print('stderr:', e.stderr.decode('utf8'))
-          raise e
-      # Increment
-      i+=1
+    out = subprocess.call(l_cmd)
+    if out != 0:
+      print('Error at ', [category, file_name])
+    
+  # Increment
+  i+=1
     
 stop = time.time()
 duration = stop-start
 print(f'\nTime spent: {duration:.2f}s (~ {duration/i:.2f}s per file)')
 
-#%% Sweep
+
+# %%
+subprocess.call(['ffmpeg', '-i', path_input_file, '-r', str(i_fps), '-c:v', 'copy', '-y', path_output_file])
+
 # %%
