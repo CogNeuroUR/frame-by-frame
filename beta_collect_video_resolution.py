@@ -78,7 +78,6 @@ for category in l_categories[:N]:
                                            video_fname=file_name)
             l_best.append([category, file_name, best[0]])
 
-#%% Order alphabetically the categories
 l_sorted_best = sorted(l_best)
 print(l_sorted_best[:10])
 
@@ -107,6 +106,7 @@ for category, file_name, best in l_sorted_best:
       # Get sizes
       frame = vr.get_batch([0])
       
+      """
       l_cats.append(category)
       if i == 0:
         l_resolutions.append([category, ''])
@@ -117,7 +117,8 @@ for category, file_name, best in l_sorted_best:
         else:
           l_resolutions.append([category, ''])
           l_resolutions.append([file_name, frame.shape[1], frame.shape[2]])
-          
+      """
+      l_resolutions.append([category, file_name, frame.shape[1], frame.shape[2]]) 
     
       i+=1
 stop = time.time()
@@ -126,18 +127,26 @@ print(f'\nTime spent: {duration:.2f}s (~ {duration/N:.2f}s per file)')
 # %%
 print(l_resolutions[:10])
 # %%
-res_df = pd.DataFrame(l_resolutions, columns=['Categories/File names', 'Height', 'Width'])
+#res_df = pd.DataFrame(l_resolutions, columns=['Categories/File names', 'Height', 'Width'])
+res_df = pd.DataFrame(l_resolutions, columns=['Categories', 'File names', 'Height', 'Width'])
 print(res_df)
 #%%
-res_df.to_csv('outputs/RAW_DOWNSIZING_IN_PROGRESS_resolutions_sorted.csv')
+res_df.to_csv('outputs/20212501_RAW_DOWNSIZING_IN_PROGRESS_resolutions_category_fnames_sorted.csv')
 
 #%% ############################################################################
 # Resizing of the videos
 ################################################################################
 #%% Load resolutions from csv
-res_df = pd.read_csv('outputs/RAW_DOWNSIZING_IN_PROGRESS_resolutions_sorted.csv')
+#res_df = pd.read_csv('outputs/RAW_DOWNSIZING_IN_PROGRESS_resolutions_sorted.csv')
+res_df = pd.read_csv('outputs/20212501_RAW_DOWNSIZING_IN_PROGRESS_resolutions_category_fnames_sorted.csv')
 print(res_df)
 
+#%% Collect a subset of videos that have a specific width
+original_width = 320
+
+l_files_found = res_df[res_df['Width'] <= original_width][['Categories', 'File names']].values
+print(l_files_found[:20])
+print(f'Nr. videos with width lower than {original_width}p: ', len(l_files_found))
 #%% Option #1: Resize to average width (+ keep aspect ratio)
 mean_width = int(res_df['Width'].mean())
 
@@ -196,21 +205,34 @@ subset = np.array(l_best)[subset_idxs]
 for category, file_name, best in subset:
   print(category, file_name)
 
+#%% Test on a subset
+N = 30
+np.random.seed(0)
+temp = np.arange(len(l_files_found))
+np.random.shuffle(temp)
+subset_idxs = temp[:N]
+subset = l_files_found[subset_idxs]
+
+for category, file_name in subset:
+  print(category, file_name)
+
 #%% Start resizing  
 start = time.time()
 # Parameters: ==============================================
-width = 1280 #mean_width
-out_folder = Path(f'data/resizing_tests/comparison/').absolute()
+width = 480 #mean_width
+out_folder = Path(f'data/resizing_tests/Upscalling/comparison/from_{original_width}p/to_{width}p').absolute()
+# Check if exist, if not, make one
+os.makedirs(out_folder, exist_ok=True)
 # ==========================================================
 
-i = 0
-l_cats = [] 
-for category, file_name, best in subset:
+i = 0 
+#for category, file_name, best in subset:
+for category, file_name in subset:
     # Verbose 
     print(f'{i}/{len(subset)}')
   
     path_2_file = str(Path(f'data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{file_name}').absolute())
-    output_file = str(out_folder / f'w{width}_{category}_{file_name}')
+    output_file = str(out_folder / f'from_{original_width}p_to_{width}p_{category}_{file_name}')
     subprocess.call(
     ['ffmpeg', '-i', path_2_file,  '-vf', f'scale={width}:-2', output_file])
     #print('file %s saved' % out_file)
@@ -221,8 +243,13 @@ print(f'\nTime spent: {duration:.2f}s (~ {duration/N:.3f}s per file)')
 
 #%% Copy the subset for comparison
 import shutil
+out_folder = Path(f'data/resizing_tests/Upscalling/comparison/from_{original_width}p/original').absolute()
+# Check if exist, if not, make one
+os.makedirs(out_folder, exist_ok=True)
+
 i=0
-for category, file_name, best in subset:
+#for category, file_name, best in subset:
+for category, file_name in subset:
     # Verbose 
     print(f'{i}/{len(subset)}')
   
@@ -231,9 +258,9 @@ for category, file_name, best in subset:
     # Get width
     if os.path.exists(path_2_file):
         vr = VideoReader(str(path_2_file))
-        original_width = vr.get_batch([0]).shape[1]
+        #original_width = vr.get_batch([0]).shape[2]
         
-        output_file = str(out_folder / f'ow{original_width}_{category}_{file_name}')
+        output_file = str(out_folder / f'ow_{original_width}p_{category}_{file_name}')
         
         shutil.copyfile(src=path_2_file,
                         dst=output_file)
@@ -310,4 +337,36 @@ print(bordered_df)
 #%%
 bordered_df.to_csv('outputs/RAW_DOWNSIZING_IN_PROGRESS_bordered_videos.csv')
 
+# %%
+################################################################################
+# Check if files from csv file are present in the dataset
+################################################################################
+#%% Load csv as pandas df
+text_video_df = pd.read_csv('spreadsheets/text_containing_videos.csv',
+                            sep=';')
+print(text_video_df)
+
+
+# %%
+input_path = Path(f'data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/')
+l_files = list(input_path.rglob("*.mp4"))
+
+for file in l_files[:10]:
+  # Check if in text_video_df
+  print(file)
+
+# %%
+prefix = Path('data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS')
+
+l_still_exist = []
+for name in text_video_df.to_numpy():
+  print(name)
+  path_name = prefix / str(name[0] + '/' +  name[1] + '.mp4')
+  if os.path.exists(path_name):
+    #print(path_name)
+    l_still_exist.append(path_name)
+  
+print('Nr. files found: ', len(l_still_exist))
+# %%
+len(result)
 # %%

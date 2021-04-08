@@ -1,15 +1,17 @@
 #%%#############################################################################
-# OV 10.02.21
+# OV 01.04.21
 # Make sure to switch to stock (3.8.2) python which has access to homebrew
 # installation of the ffmpeg -> let's us encode back into h264 (no visual loss)
 ################################################################################
-#%% Sweep through videos
+#%% Imports 
 from pathlib import Path
+import time
+import cv2
+import subprocess
 
-#path_input = Path('data/MIT_additionalVideos_25FPS/').absolute()
-#path_output = Path('data/MIT_additionalVideos_25FPS_480x360p').absolute()
-path_input = Path('data/single_video_25FPS').absolute()
-path_output = Path('data/single_video_25FPS_480x360p').absolute()
+#%% Sweep through videos
+path_input = Path('../data/MIT_additionalVideos_25FPS/').absolute()
+path_output = Path('../data/MIT_additionalVideos_25FPS_480x360p').absolute()
 
 if not os.path.exists(path_output):
   os.makedirs(path_output)
@@ -18,9 +20,11 @@ if not os.path.exists(path_output):
 l_videos = []
 for path, subdirs, files in os.walk(path_input):
   for name in files:
+    # Check if files have .mp4 extension
     if name[-3:] == 'mp4':
       l_videos.append([path.split('/')[-1],   # category
                        name])                 # file name
+    # Report non-mp4 files
     else:
       print('Ignored: ', name)
 
@@ -32,13 +36,12 @@ print('Total nr. of MP4s: ', len(l_videos))
 # Resizing of the videos
 ################################################################################
 #%% Test on one video
-import subprocess
 width = 480
 #category = 'bicycling'
 #file_name = 'yt-5r5WH6nBey8_235.mp4'
 category = 'burying'
 file_name = 'yt-_6awwB9VXzo_13.mp4'
-path_2_file = str(Path(f'data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{file_name}').absolute())
+path_2_file = str(Path(f'../data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{file_name}').absolute())
 out_file = path_output / file_name
 
 output = str(subprocess.check_output(
@@ -51,15 +54,13 @@ print(subprocess.call(
   ))
 
 #%% Run a subset
-import time
-import cv2
-import subprocess
-
 start = time.time()
+
 # Parameters: ==============================================
 out_width = 480 #mean_width
 # ==========================================================   
 
+# Sweep through videos in list
 for i in range(len(l_videos)):
   # Verbose
   if i%50 == 0:
@@ -67,7 +68,7 @@ for i in range(len(l_videos)):
 
   category, file_name = l_videos[i]
   
-  # Define paths
+  # Define input- & output-paths
   path_input_file = str(path_input / category/ file_name)
   path_output_file = str(path_output / category / file_name)
   
@@ -87,22 +88,19 @@ for i in range(len(l_videos)):
     shapes = 'iw:iw*3/4'
   scales = f'{out_width}:-2'
   
-  # Define command
+  # Define shell command
   cmd = ['ffmpeg', '-i', path_input_file, '-vcodec', 'libx264',
       '-filter:v', f"crop={shapes}, scale={scales}", '-y', path_output_file]
   
-  # Run
+  # Run command
   if subprocess.call(cmd) != 0:
     raise Exception(f'Error while resizing {category}/{file_name}!')
-  
-  i += 1
     
 stop = time.time()
 duration = stop-start
-print(f'\nTime spent: {duration:.2f}s (~ {duration/i:.3f}s per file)')
+print(f'\nTime elapsed: {duration:.2f}s (~ {duration/i:.3f}s per file)')
 
 # %% Test each output video if has the correct size (w/ decord)
-import time
 import cv2
 import subprocess
 
@@ -147,7 +145,7 @@ for category, file_name in l_videos:
 print('Test finished!')
 
 # %% For statistics
-path_output = Path('data/MIT_additionalVideos_25FPS_480x360p').absolute()
+path_output = Path('../data/MIT_additionalVideos_25FPS_480x360p').absolute()
 l_processed = []
 for path, subdirs, files in os.walk(path_output):
   for name in files:

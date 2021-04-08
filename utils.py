@@ -1,7 +1,7 @@
 # Imports
 import os
 import sys
-from pathlib import Path
+import time
 
 # Video processing
 if sys.version_info[1] != 8:
@@ -15,17 +15,105 @@ from matplotlib import pyplot as plt
 ################################################################################
 # Load categories (MiTv1)
 ################################################################################
-def load_categories():
-    path_prefix = Path().parent.absolute()
+def load_categories(path_to_categories):
     """Load MiTv1 categories."""
-    with open(path_prefix / 'labels/category_momentsv1.txt') as f:
+    with open(path_to_categories) as f:
         return [line.rstrip() for line in f.readlines()]
 
+#%% ############################################################################
+# extract_features
+################################################################################
+def extract_features(l_categories, softmax_dict):
+  """
+  Function to extract softmax feature vectors, given an accuracies dictionary.
+  The accuracies dictionary of dictionaries contains per category, per file,
+  per frame softmax classification probabilities for the true category.
+  This has to be structured as follows:
+    {
+      category_i :
+        {
+          file_name_j : (n_frames, n_labels)
+        }
+    }
+  Parameters
+  ----------
+  l_categories : list
+    Original labels used for pretraining of the model (ordered as for the model pretraining)
+  
+  softmax_dict : dict
+    Accuracies dictionary
+      
+  Outputs
+  -------
+  features_softmax : array-like, shape (n_samples, n_features)
+    Softmax feature vectors
+  """
+  
+  l_avg_softvectors = []
+  l_labels = []
+
+  start = time.time()
+  i = 0
+  for category in l_categories:
+    #print(i, category)
+    i+=1
+    
+    # Extract files per category
+    l_files = list(softmax_dict[category].keys())
+    
+    if not l_files: # Check if any files present
+      continue
+    
+    # Collect average accuracies on the TRUE category per file
+    l_softvectors = []
+    #print(category)
+    for file_name in l_files:
+      # Determine the best frame
+      best, worst = best_worst(accuracies_dict=softmax_dict,
+                                    l_categories=l_categories,
+                                    category_name=category,
+                                    video_fname=file_name)
+      # Read softmax vector at best frame -> (n_categories, 1)
+      per_frame_accuracies = np.array(
+          softmax_dict[category][file_name])[best[0]]
+      # Append into list
+      l_softvectors.append(per_frame_accuracies)
+
+    # Convert l_softvectors to array:
+    l_softvectors = np.array(l_softvectors)
+    #print(l_softvectors.shape)
+    # Dump the mean softmax vector per category into l_avg_softvectors
+    l_avg_softvectors.append(l_softvectors.mean(axis=0))
+    l_labels.append(str(category))
+
+  # Convert l_avg_softvectors to an array of softmax features
+  features_softmax = np.array(l_avg_softvectors)
+  stop = time.time()
+  duration = stop-start
+  print(f'Time spent: {duration:.2f}s (~ {duration/len(l_categories):.4f}s per file)')
+  print(f'{len(l_avg_softvectors)} categories swept!')
+
+  """
+  # Extract indices of elements in l_categories that are also present in l_labels
+  l_idxs = [i for i in range(len(l_categories)) if l_categories[i] in l_labels]
+  # Check if it run correctly
+  assert l_labels == list(np.array(l_categories)[l_idxs])
+
+  # Trim output array to have only swept categories
+  features_softmax = features_softmax[:, l_idxs]
+  
+  df_softmax = pd.DataFrame(data=features_softmax,
+                            columns=l_labels, index=l_labels)
+  
+  return df_softmax, l_labels
+  """
+  return features_softmax, l_labels
 
 ################################################################################
 # topN_per_frame
 ################################################################################
-def topN_per_frame(accuracies_dict, N=3,
+def topN_per_frame(accuracies_dict, l_categories,
+                   N=3,
                    extract_best_worst = False,
                    verbose = False):
     """
@@ -37,7 +125,7 @@ def topN_per_frame(accuracies_dict, N=3,
     topN = {}
     
     # load categories
-    l_categories = load_categories()
+    #l_categories = load_categories()
     
     if extract_best_worst:
         best_frame_dict = {}
@@ -118,7 +206,8 @@ def topN_per_frame(accuracies_dict, N=3,
 ################################################################################
 # topN categories per file:
 ################################################################################
-def topN_categories(accuracy_array, N=5,
+def topN_categories(accuracy_array, l_categories,
+                    N=5,
                     make_plots=False,
                     verbose=False):
     """
@@ -127,7 +216,7 @@ def topN_categories(accuracy_array, N=5,
     Returns the indexes of top N categories
     """
     # load categories
-    labels = load_categories()
+    #labels = load_categories()
     
     # Extract the mean accuracies over frames
     mean_accuracies = np.mean(accuracy_array, axis=0)
@@ -141,7 +230,7 @@ def topN_categories(accuracy_array, N=5,
         print(f'--Top {N} Actions:')
     for i in range(N):
         if verbose:    
-            print('{:.3f} -> {}'.format(values[i], labels[indices[i]]))
+            print('{:.3f} -> {}'.format(values[i], l_categories[indices[i]]))
         topN.append(indices[i])
     
     if make_plots:
@@ -162,7 +251,8 @@ def topN_categories(accuracy_array, N=5,
 ################################################################################
 # topN_per_file
 ################################################################################
-def topN_per_file(accuracies_dict, N=3,
+def topN_per_file(accuracies_dict, l_categories,
+                  N=3,
                   category_name='applauding',
                   video_fname='yt-bX3KmVN89Co_1.mp4',
                   extract_best_worst = False,
@@ -174,7 +264,7 @@ def topN_per_file(accuracies_dict, N=3,
         {category_name : {video_fname : []}}
     """
     # load categories
-    l_categories = load_categories()
+    #l_categories = load_categories()
     
     if extract_best_worst:
         best_frame_dict = []
@@ -209,8 +299,8 @@ def topN_per_file(accuracies_dict, N=3,
     topN = []
     
     # Check if "category" is in TopN:
-    if cat_idx in topN_categories(per_frame_accuracies, N=N):
-        indices = topN_categories(per_frame_accuracies, N=N)
+    if cat_idx in topN_categories(per_frame_accuracies, l_categories=l_categories,N=N):
+        indices = topN_categories(per_frame_accuracies, l_categories=l_categories,N=N)
         # Iterate over frames
         for frame in per_frame_accuracies:
             temp_list = []
@@ -221,7 +311,7 @@ def topN_per_file(accuracies_dict, N=3,
             # Append extracted to topN:
             topN.append(temp_list)
     else:
-        indices = topN_categories(per_frame_accuracies, N=N-1)
+        indices = topN_categories(per_frame_accuracies, l_categories=l_categories,N=N-1)
         indices.append(cat_idx)
         # Iterate over frames
         for frame in per_frame_accuracies:
@@ -240,7 +330,7 @@ def topN_per_file(accuracies_dict, N=3,
 ################################################################################
 # best_worst
 ################################################################################
-def best_worst(accuracies_dict,
+def best_worst(accuracies_dict, l_categories,
                category_name='applauding',
                video_fname='yt-bX3KmVN89Co_1.mp4',
                verbose = False):
@@ -251,7 +341,7 @@ def best_worst(accuracies_dict,
         {category_name : {video_fname : []}}
     """
     # load categories
-    l_categories = load_categories()
+    #l_categories = load_categories()
     
     cat_idx = [i for i in range(len(l_categories))
                if l_categories[i] == category_name][0]
@@ -422,3 +512,21 @@ def get_distances(X,model,mode='l2'):
         distances.append(dNew)
         weights.append( wNew)
     return distances, weights
+
+################################################################################
+# Check for path 
+################################################################################
+
+def check_mkdir(path):
+  """
+  Check if folder "path" exists. If not, creates one. 
+  
+  Returns
+  -------
+  If exists, returns "True", otherwise create a folder at "path" and return "False"
+  """
+  if not os.path.exists(path):
+    os.mkdir(path)
+    return False
+  else:
+    return True

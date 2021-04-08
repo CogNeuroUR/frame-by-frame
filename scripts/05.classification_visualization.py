@@ -1,4 +1,4 @@
-# [22.10.20] OV
+# [01.04.21] OV
 # Script for investigation of per-frame TopN accuracies extracted using an MiTv1
 # pretrained ResNet50
 
@@ -16,13 +16,11 @@ import pickle
 from pathlib import Path
 # Data types
 import numpy as np
-import pandas as pd
 # Plots
-import seaborn as sns
 import matplotlib
 #%matplotlib qt
 import matplotlib.pyplot as plt
-from PIL import Image
+
 #%% Import custom utils
 import sys, importlib
 sys.path.insert(0, '..')
@@ -33,7 +31,7 @@ importlib.reload(utils) # Reload If modified during runtime
 # Load full accuracy dictionary extracted w/ ResNet50-MiTv1
 ################################################################################
 # %% Define paths
-path_prefix = Path('')
+path_prefix = Path('..')
 dict_path = path_prefix / 'saved/full/accuracies_per_category_full_mitv1.pkl'
 # Load from file
 f = open(dict_path, 'rb')
@@ -50,16 +48,19 @@ c_name = 'chopping' # because it's loadead in repo
 f_name =  'flickr-3-4-6-3-2-0-0-3-2534632003_11.mp4'
 
 # Load categories from txt file
-l_categories = utils.load_categories()
+l_categories = utils.load_categories('../labels/category_momentsv1.txt')
+
 # Get index of the category from l_categories (from 0 to 338)
 c_idx = [i for i in range(len(l_categories)) if l_categories[i] == c_name][0]
 
-################################################################################
+#%%#############################################################################
 # Extract TopN category-accuracy pairs (clean)
 ################################################################################
-labels, topN_ = utils.topN_per_file(accuracies_per_category, N=5,
-                            category_name=c_name,
-                            video_fname=f_name)
+labels, topN_ = utils.topN_per_file(accuracies_per_category,
+                                    l_categories=l_categories,
+                                    N=5,
+                                    category_name=c_name,
+                                    video_fname=f_name)
 print(len(topN_))
 
 ################################################################################
@@ -92,15 +93,14 @@ plt.show()
 # Extract TopN category-accuracy pairs w/ best and worst frames
 ################################################################################
 #%% With best and worst
-c_name = 'cutting' # because it's loadead in repo
+c_name = 'cutting'
 f_name =  'yt-UgO4jE-puiE_67.mp4'
 
-# Load categories from txt file
-l_categories = utils.load_categories()
 # Get index of the category from l_categories (from 0 to 338)
 c_idx = [i for i in range(len(l_categories)) if l_categories[i] == c_name][0]
 
 labels, topN_, best, worst = utils.topN_per_file(accuracies_per_category, N=5,
+                                                 l_categories=l_categories,
                                                  category_name=c_name,
                                                  video_fname=f_name,
                                                  extract_best_worst=True)
@@ -151,11 +151,7 @@ ax3.set_title(f'Best frame ({best_idx})')
 
 plt.tight_layout()
 #plt.savefig(str(path_prefix / f'plots/best&worst+top5/{c_name}_{f_name}.pdf'))
-plt.savefig(str(path_prefix / f'plots/best&worst+top5/{c_name}_{f_name}.png'))
+#plt.savefig(str(path_prefix / f'plots/best&worst+top5/{c_name}_{f_name}.png'))
 plt.show()
-
-################################################################################
-# Widgets (to be implmented)
-################################################################################
 
 # %%
