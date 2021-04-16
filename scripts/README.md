@@ -1,18 +1,7 @@
 ## Chronological order of scripts
 
-<<<<<<< HEAD
-This is the latest update (**remove me**)
-
-=======
-
-this is only a commit 
-
-
-change 
->>>>>>> 6860d74444f0879c836dc5f9be6e72c15d17ff10
 * `change_framerate`
-
-    
+ 
     Prior to any further processing and analysis, conversion to final frame-rate
     has to be run.
 

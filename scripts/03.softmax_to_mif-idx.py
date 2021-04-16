@@ -1,4 +1,4 @@
-# 14.04.21 OV
+# 16.04.21 OV
 #
 # Extraction of MIF indexes, based on RN50 softmax accuracy dictionary created
 # using rn50_classification.ipynb
@@ -31,7 +31,7 @@ print(len(accuracies_per_category['adult+female+singing']['yt-5xIQsJVNRz4_1227.m
 
 #%% Sweep through files in subfolders of path_input
 import os
-path_input = '../data/MIT_sampleVideos_RAW_final'
+path_input = '../data/MIT_sampleVideos_RAW_final_25FPS'
 
 l_videos = []
 for path, subdirs, files in os.walk(path_input):
@@ -53,18 +53,20 @@ path_labels = '../labels/category_momentsv1.txt'
 categories = utils.load_categories(path_labels)
 
 #%%
-cat_idx = categories.index('adult+female+singing')
-pred_accuracies = np.array(accuracies_per_category['adult+female+singing']['yt-0rvJOREmAv4_60.mp4'])[:, cat_idx]
+category = 'aiming'
+file_name = 'yt-0gwUV4Ze-Hs_390.mp4'
+cat_idx = categories.index(category)
+pred_accuracies = np.array(accuracies_per_category[category][file_name])[:, cat_idx]
 
 #%% Extract MIF idx-s
 l_mifs = []
 
 l_notfound = []
 
-for i in range(len(l_videos[:10])):
+for i in range(len(l_videos)):
   # Get category and file names
   category, file_name = l_videos[i]
-  print(category, file_name)
+  #print(category, file_name)
   # Get idx. of true category from original ordering of categories
   cat_idx = categories.index(category)
 
@@ -73,26 +75,21 @@ for i in range(len(l_videos[:10])):
   try:
     pred_accuracies = np.array(accuracies_per_category[category][file_name])[:, cat_idx]
     #break
-    print(pred_accuracies.shape)
-  except KeyError:
-    print('OOOps')
-  
-  """
-  if file_name in accuracies_per_category.values():
-    
+    #print(pred_accuracies.shape)
     # Append to output list
     l_mifs.append([category, file_name,
                   np.argmax(pred_accuracies),
                   pred_accuracies[np.argmax(pred_accuracies)]])
-  else:
-    #print('Values not found at ', category, file_name)
+  except KeyError:
     l_notfound.append([category, file_name])
-  """
+    print('OOOps, error at ', print(category, file_name))
   
 print('Found: ', len(l_mifs))
 print('Not found: ', len(l_notfound))
 
-#%% Save to .csv
+#%% Convert to pd.DataFrame
 df = pd.DataFrame(l_mifs, columns=['category', 'fname', 'mif_idx', 'softmax[category]'])
 print(df)
-df.to_csv(path_prefix / 'saved/mifs_from-dict.csv')
+
+#%% Save to .csv
+df.to_csv('../saved/mifs_MIT_sampleVideos_RAW_final_25FPS_from-dict.csv')
