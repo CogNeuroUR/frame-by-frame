@@ -3,7 +3,6 @@
 change 
 * `change_framerate`
 
-this is really useful stuff!
     
     Prior to any further processing and analysis, conversion to final frame-rate
     has to be run.
