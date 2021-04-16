@@ -24,9 +24,8 @@ __pycache__/
 saved/*
 !saved/ResNet50_MiTv1_accuracies_per_category.pkl
 
-# Ignore beta & old
-#beta_*
-old_*
+# Ignore old scripts that were corrected AND/OR moved to "scripts" folder
+old_* 
 
 # Ignore extracted
 best_and_worst_frames_RN50MiTv1/
