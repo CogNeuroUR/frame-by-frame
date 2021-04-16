@@ -10,8 +10,6 @@ import time
 
 #%% Define input paths
 path_gifs = Path('../data/TRIMMING/INPUT/MIT_GIFs_25FPS_480x360p_1.0s_TOP-3-PER-CAT_old+new')
-path_pngs = Path('../data/TRIMMING/INPUT/MIT_MIFs_480x360p_png_old+new')
-path_mp4s = Path('../data/TRIMMING/INPUT/08_MIT_sampleVideos_25FPS_480x360p_old+new')
 
 #%% Sweep through input gifs set
 l_gifs = []
@@ -36,9 +34,6 @@ print('Total nr. of GIFs: ', len(l_gifs))
 #%% ############################################################################
 # Extract from list of videos
 ################################################################################
-start = time.time()
-
-###########################
 # Distribution parameters
 p = 0 # for participant ID : Lisa (Lisa, Lucca, Pauline, Johannes)
 l_b = []
@@ -91,10 +86,6 @@ for i in range(len(l_gifs)):
 
 dict_participants[p] = [len(l_b), len(l_m), len(l_e)]
 
-stop = time.time()
-duration = stop-start
-print(f'\nTime spent: {duration:.2f}s (~ {duration/i:.2f}s per file)')
-
 # %% Plot distribution
 import pandas as pd
 import seaborn as sns
@@ -116,7 +107,7 @@ print(df_distrib.head())
 # Check if all files visited:
 assert df_distrib['Count'].sum() == len(l_gifs), "Not all files visited!"
 
-
+#%% Plot
 sns.catplot(data = df_distrib,
             x = 'Position',
             y = 'Count',

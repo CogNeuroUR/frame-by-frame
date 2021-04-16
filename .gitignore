@@ -22,7 +22,9 @@ _ignore/
 __pycache__/
 # Prevent from uploading saved files
 saved/*
-!saved/ResNet50_MiTv1_accuracies_per_category.pkl
+!20210305_AB_ratorDistribution_qq1+qq2.csv
+!mifs_MIT_sampleVideos_RAW_final_25FPS_from-dict.csv
+#!saved/ResNet50_MiTv1_accuracies_per_category.pkl
 
 # Ignore old scripts that were corrected AND/OR moved to "scripts" folder
 old_* 
