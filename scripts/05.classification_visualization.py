@@ -32,6 +32,7 @@ importlib.reload(utils) # Reload If modified during runtime
 ################################################################################
 # %% Define paths
 path_prefix = Path('..')
+# AB: Obtained in which step? (adds to understandability)
 dict_path = path_prefix / 'saved/full/accuracies_per_category_full_mitv1.pkl'
 # Load from file
 f = open(dict_path, 'rb')
@@ -44,10 +45,17 @@ accuracies_per_category = pickle.load(f)
 ################################################################################
 #%% Define example file
 # category and file names
-c_name = 'chopping' # because it's loadead in repo
+c_name = 'chopping' # because it's loadead in repo (AB: GitHub repo?)
 f_name =  'flickr-3-4-6-3-2-0-0-3-2534632003_11.mp4'
 
+# AB: I understand the code in that way, that one would have to adjsut the c_name/f_name
+# if one wnated a figure displayed a different action?
+# Back then you provided me some ~ 20 figures, I guess all made individualyl with this scirpt?
+
+# This could be speciefied a bit more here to be more clear, plese
+
 # Load categories from txt file
+# AB: change path if necessary
 l_categories = utils.load_categories('../labels/category_momentsv1.txt')
 
 # Get index of the category from l_categories (from 0 to 338)
@@ -56,6 +64,7 @@ c_idx = [i for i in range(len(l_categories)) if l_categories[i] == c_name][0]
 #%%#############################################################################
 # Extract TopN category-accuracy pairs (clean)
 ################################################################################
+# AB: more info considering the utils (also in readme / doc would help to understand this step)
 labels, topN_ = utils.topN_per_file(accuracies_per_category,
                                     l_categories=l_categories,
                                     N=5,
