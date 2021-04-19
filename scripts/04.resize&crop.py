@@ -1,7 +1,7 @@
 #%%#############################################################################
 # OV 01.04.21
 # Make sure to switch to stock (3.8.2) python which has access to homebrew
-# installation of the ffmpeg -> let's us encode back into h264 (no visual loss)
+# installation of the ffmpeg -> lets us encode back into h264 (no visual loss)
 ################################################################################
 #%% Imports 
 from pathlib import Path
@@ -9,7 +9,10 @@ import time
 import cv2
 import subprocess
 
+# AB: import os (?)
+
 #%% Sweep through videos
+# AB: change paths if necessary (might be run locally / dependencies (!))
 path_input = Path('../data/MIT_additionalVideos_25FPS/').absolute()
 path_output = Path('../data/MIT_additionalVideos_25FPS_480x360p').absolute()
 
@@ -30,6 +33,7 @@ for path, subdirs, files in os.walk(path_input):
 
 if l_videos:
   l_videos = sorted(l_videos)
+# AB: Terminal Feedback to User
 print('Total nr. of MP4s: ', len(l_videos))
 
 #%% ############################################################################
@@ -47,6 +51,8 @@ out_file = path_output / file_name
 output = str(subprocess.check_output(
   ['ffprobe', '-v', 'quiet', '-print_format', 'default', '-show_format', '-show_streams', path_2_file]
   , stderr=subprocess.STDOUT)).split('\\n')
+  # AB: Please add some info (or reference to man page) on parameters here
+  # AB: This represents the core of what is done in the script, I guess
 print(output[9][6:], output[10][7:])
 
 print(subprocess.call(
@@ -101,6 +107,7 @@ duration = stop-start
 print(f'\nTime elapsed: {duration:.2f}s (~ {duration/i:.3f}s per file)')
 
 # %% Test each output video if has the correct size (w/ decord)
+# AB: Why imports here and not exclusively above?
 import cv2
 import subprocess
 
@@ -145,6 +152,7 @@ for category, file_name in l_videos:
 print('Test finished!')
 
 # %% For statistics
+# AB: change path if necessary
 path_output = Path('../data/MIT_additionalVideos_25FPS_480x360p').absolute()
 l_processed = []
 for path, subdirs, files in os.walk(path_output):
@@ -158,5 +166,7 @@ for path, subdirs, files in os.walk(path_output):
 if l_processed:
   l_processed = sorted(l_processed)
 print('Total nr. of MP4s: ', len(l_processed))
+
+# AB: What is accomplished in this block?
 
 # %%
