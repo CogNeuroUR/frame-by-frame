@@ -11,6 +11,7 @@ from pathlib import Path
 # Data types & numerics
 import numpy as np
 import pandas as pd
+# AB: Why Sklearn instead of others? Any reason?
 from sklearn.cluster import AgglomerativeClustering
 from scipy.cluster.hierarchy import dendrogram, linkage
 from scipy.spatial.distance import pdist, squareform
@@ -21,7 +22,7 @@ from scipy.spatial.distance import squareform
 import seaborn as sns
 import matplotlib
 import matplotlib.pyplot as plt
-%matplotlib qt
+%matplotlib qt # AB: comment (under Windows this is also highlighted red by VSC)
 
 #%% Import custom utils
 import sys, importlib
@@ -33,14 +34,15 @@ importlib.reload(utils) # Reload If modified during runtime
 # Load RDM
 ################################################################################
 #%% Load csv
-metric = 'cosine'
+metric = 'cosine' # AB:  Which other metrics possible?
 path_to_csv = Path(f'../outputs/rdm_average_softmax_{metric}.csv')
 df_rdm = pd.read_csv(path_to_csv)
 rdm_original = df_rdm.values[:,1:307]
 labels= list(df_rdm.columns)[1:]
 
 #%% Plot RDM
-%matplotlib qt
+# AB: important visualization step
+%matplotlib qt # AB: What is this command for?
 # Set up the matplotlib figur
 f, ax = plt.subplots(figsize=(11, 9), num='RDM')
 
@@ -69,10 +71,12 @@ for linkage in linkage_types:
     model.fit(rdm_original)
     
     # Compute Z
+    # AB: What is this measurement? (short)
     distances, weights = utils.get_distances(rdm_original, model, 'max')
     Z = np.column_stack([model.children_, distances, weights]).astype(float)
     
     # Compute cophenetic correlation coeff
+    # AB: What is this measurement? (short)
     c, d = cophenet(Z, squareform(rdm_original))
     l_cophenets.append([c, linkage])
 
@@ -90,8 +94,9 @@ plt.show()
 #%%#############################################################################
 # Hierarchical Clustering (enhanced w/ Silhouette's Idx)
 ################################################################################
-# Inspired from 
+# Inspired from: 
 # https://rstudio-pubs-static.s3.amazonaws.com/284508_1faa54c2fb684ad689eccc0bcaa3b528.html#silhouette-coefficient
+# AB: Date/Time
 # %% Silhouette's Index to find the "best" value for n_clusters
 l_silhouette = []
 linkage = 'ward' #'complete' #'ward' gives the highest cophenetic 
@@ -138,6 +143,7 @@ print(l_nested_categories)
 #%% Save as csv file
 nested_clusters = pd.DataFrame(l_nested_categories)
 path_to_csv = f'../outputs/clusters_hc_ward_{model.n_clusters}.csv'
+# AB: asjust output dir if necessary
 nested_clusters.to_csv(path_to_csv)
 
 #%%#############################################################################
@@ -155,6 +161,7 @@ from random import randint
 colors = []
 for i in range(340):
     colors.append('#%06X' % randint(0, 0xFFFFFF))
+    # AB: Which colors do these correspond to?
 
 plt.figure(figsize=(5,20), num='Dendrogram')
 R = dendrogram(
@@ -178,6 +185,7 @@ R = dendrogram(
 ################################################################################
 from collections import defaultdict
 from matplotlib.colors import rgb2hex, colorConverter
+# AB: This code cares for the coloring scheme?
 cluster_idxs = defaultdict(list)
 for c, pi in zip(R['color_list'], R['icoord']):
     for leg in pi[1:3]:
@@ -186,6 +194,8 @@ for c, pi in zip(R['color_list'], R['icoord']):
             cluster_idxs[c].append(int(i))
 
 cluster_idxs
+
+# AB: a bit more info considering these classes
 
 class Clusters(dict):
     def _repr_html_(self):
@@ -222,6 +232,8 @@ def get_cluster_classes(den, label='ivl'):
 
 get_cluster_classes(R)
 nested_clusters = get_cluster_classes(R)
+
+# AB: When are clusters visualized?
 
 #%%
 nested_clusters
