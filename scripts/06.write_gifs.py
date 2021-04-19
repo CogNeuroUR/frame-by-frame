@@ -1,5 +1,5 @@
 # [08.04.21] OV
-# Script for writting GIFs based on MIFs
+# Script for writting GIFs based on MIF indices
 
 ################################################################################
 # Imports
@@ -7,8 +7,8 @@
 #%% Imports
 from __future__ import print_function
 # Decord related
-import decord
-decord.bridge.set_bridge('native')
+import decord # AB: VSC marks some import commands as problematic ("Unable to import 'decord'pylint(import-error)")
+decord.bridge.set_bridge('native') # AB: What is this command for?
 from decord import VideoReader
 # Path and sys related
 import os
@@ -19,17 +19,20 @@ import pandas as pd
 import time, os
 
 #%% Import custom utils
+# AB: What is needed here from utilis (make these a bt more transparent would help)
 import sys, importlib
 sys.path.insert(0, '..')
 import utils
 importlib.reload(utils) # Reload If modified during runtime
 
 #%% Load MIF csv
+# AB: e.g. created via script '03.softmax_to_mif-idx.py' (?)
 path_mifs = Path('../data/MIT_additionalVideos_25FPS_480x360p/mifs.csv')
 mifs = pd.read_csv(path_mifs, usecols=['category', 'fname', 'mif_idx'])
 print(mifs)
 
 #%% Define GIF extraction function
+# AB: some words to moviepy maybe (what is it? / why used?)
 from moviepy.editor import ImageSequenceClip
 from moviepy.video.fx import blackwhite
 
@@ -75,13 +78,19 @@ def gif(filename, array, fps, rewrite=False, bw=False):
 #%% ############################################################################
 # Test on a single video
 ################################################################################
+
+# AB: Same as in '05.classification_visualization.py':
+# a bit more clear that this is an example run
+
 # Parameters
 category = 'arresting'
 file_name = 'yt-aAVfUYxx12g_18.mp4'
 path_2_file = Path(f'../data/single_video_25FPS_480x360p/{category}/{file_name}')
+# AB: change path if necessary
 
 T = 1 # in seconds
 path_output = Path('../data/single_video_25FPS_480x360p_1s/').absolute()
+# AB: change path if necessary
 utils.check_mkdir(path_output)
 
 #===============================================================================
@@ -100,7 +109,7 @@ l_best_begin = [i for i in range(best, best + N_frames)]
 l_best_mid = [i for i in range(best - N_frames//2, best + N_frames//2)]
 l_best_end = [i for i in range(best - N_frames, best)]
 
-# Empty arrays for collecting frames:
+# Create empty arrays for collecting frames:
 frames_begin = np.array([])
 frames_mid = np.array([])
 frames_end = np.array([]) 
@@ -135,14 +144,21 @@ if frames_mid is not None:
 if frames_end is not None:
         gif(end_path, frames_end, int(fps), rewrite=True)
 
+
+
 #%% ############################################################################
 # Extract GIFs from list of videos
 ################################################################################
 # Check time for elapsed
 start = time.time()
 
+# AB: is this then extracted for ALL videos of the given path
+# I think yes --> then better declare it here explicitely to render code more transperent please
+
 # Parameters: ==============================================
 T = 1.0 # time duration of the wanted segments (in seconds)
+# This is an important parameter
+# AB:  Change these if necessary
 path_output = Path(f'data/GIFs/MIT_additionalGIFs_25FPS_480x360p_{T}s/').absolute()
 path_2_dataset = Path(f'data/MIT_additionalVideos_25FPS_480x360p/')
 
@@ -151,9 +167,10 @@ utils.check_mkdir(path_output)
 # ==========================================================
 # Iterate over rows of mif dataframe 
 i=0
-for index, row in mifs.iterrows():
+for index, row in mifs.iterrows(): # AB: Does this loop iterate e.g. over all our MIT-vodeos? if yes please satet her additionaly
   i+=1
   if i < len(mifs) + 1000:  # "+1000" to be sure :-P
+    # AB: What is this extension for?
     # Extract category, filename and MIF idx
     category, file_name, best = row
     
@@ -187,7 +204,7 @@ for index, row in mifs.iterrows():
 
     # Extract frames w/ decord
     # (also check if last proposed frame idx exists )
-    if l_best_begin[-1] < vr.__len__():
+    if l_best_begin[-1] < vr.__len__(): # vr := video reader (decord) (?)
         frames_begin = vr.get_batch(l_best_begin).asnumpy()
     if l_best_mid[-1] < vr.__len__():
         frames_mid = vr.get_batch(l_best_mid).asnumpy()
@@ -197,6 +214,9 @@ for index, row in mifs.iterrows():
     start_path = path_output_file / f'{file_name[:-4]}_b.gif'
     mid_path = path_output_file / f'{file_name[:-4]}_m.gif'
     end_path = path_output_file / f'{file_name[:-4]}_e.gif'
+
+    # AB: Does the batch saving of the gifs with the names specified above happen HERE?
+    # if yes make more clear plese
 
     # Save arrays to gifs:
     # IF "best-in-the-middle" exists, save it, otherwise, go to "...-begin", ...
@@ -211,6 +231,7 @@ for index, row in mifs.iterrows():
 
 stop = time.time()
 duration = stop-start
+# runtime feedback to user
 print(f'\nTime spent: {duration:.2f}s (~ {duration/i:.3f}s per file)')
 
 #%% Sweep through files in subfolders of path_input
@@ -231,7 +252,9 @@ print('Total nr. of GIFs: ', len(l_videos))
 # Test on a subset
 ################################################################################
 #%%
+# declare size of subset to test upon
 N = 20
+# change paths if necessary
 path_dataset = Path('data/MIT_sampleVideos_RAW_final_25FPS_480x360p/')
 path_output = Path('data/GIFs/BW_GIFs')
 subset = mifs.sample(n=N, random_state=2)
@@ -256,9 +279,9 @@ for index, row in subset.iterrows():
     N_frames = int(fps * T)
 
     # Define list with indices of frames ~ the position of the best frame
-    l_best_begin = [i for i in range(best, best + N_frames)]
-    l_best_mid = [i for i in range(best - N_frames//2, best + N_frames//2)]
-    l_best_end = [i for i in range(best - N_frames, best)]
+    l_best_begin = [i for i in range(best, best + N_frames)]                # MIF := beginning fram
+    l_best_mid = [i for i in range(best - N_frames//2, best + N_frames//2)] # MIF := middle frame
+    l_best_end = [i for i in range(best - N_frames, best)]                  # MIF := end frame
 
     # Empty arrays:
     frames_begin = np.array([])
