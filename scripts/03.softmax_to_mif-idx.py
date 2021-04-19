@@ -15,9 +15,11 @@ import numpy as np
 import sys, importlib
 sys.path.insert(0, '..')
 import utils
+# AB: What do they contain / what is needed here?
 importlib.reload(utils) # Reload If modified during runtime
 
 # %% Load full accuracy dictionary extracted w/ ResNet50-MiTv1
+# AB: extracted at '01.mif_extraction_exploratory.ipynb' /  '01.mif_extraction_short.ipynb' (?)
 path_prefix = Path().parent.absolute()
 dict_path = Path('../saved/accuracies_per_category_mitv1_fps-25.pkl')
 # Load from file
@@ -25,18 +27,19 @@ f = open(dict_path, 'rb')
 accuracies_per_category = pickle.load(f)
 
 #%%
+# AB: example?
 print(len(accuracies_per_category['adult+female+singing']['yt-5xIQsJVNRz4_1227.mp4'][0]))
 
 #%%
 
 #%% Sweep through files in subfolders of path_input
 import os
-path_input = '../data/MIT_sampleVideos_RAW_final_25FPS'
+path_input = '../data/MIT_sampleVideos_RAW_final_25FPS' # AB: change if necessary
 
 l_videos = []
 for path, subdirs, files in os.walk(path_input):
   for name in files:
-    if name[-3:] == 'mp4':
+    if name[-3:] == 'mp4': # AB: file =? .MP4 (ß)
       l_videos.append([path.split('/')[-1],   # category
                        name])                 # file name
     else:
@@ -44,15 +47,20 @@ for path, subdirs, files in os.walk(path_input):
 
 if l_videos:
   l_videos = sorted(l_videos)
+
+# AB: display length of video-vector
 print('Total nr. of MP4s: ', len(l_videos))
 
 #%% Load RN50 softmax dictionary
+# AB: Where retrieved from? Stored at GitHub but where is this txt-file from
 path_labels = '../labels/category_momentsv1.txt'
 
 # load categories
 categories = utils.load_categories(path_labels)
+# AB: explain a bit more a bit abt. utils woudl be helpful
 
 #%%
+# AB: example
 category = 'aiming'
 file_name = 'yt-0gwUV4Ze-Hs_390.mp4'
 cat_idx = categories.index(category)
@@ -71,12 +79,13 @@ for i in range(len(l_videos)):
   cat_idx = categories.index(category)
 
   # Extract softmax values for the true category, i.e. cat_idx
+  # AB: even if it is not the top entry (or not even in the top 5)
   # Check if values exists:
   try:
     pred_accuracies = np.array(accuracies_per_category[category][file_name])[:, cat_idx]
     #break
     #print(pred_accuracies.shape)
-    # Append to output list
+    # Append to output list of mifs (:= most informative frames)
     l_mifs.append([category, file_name,
                   np.argmax(pred_accuracies),
                   pred_accuracies[np.argmax(pred_accuracies)]])
