@@ -163,7 +163,7 @@ for i in range(340):
     colors.append('#%06X' % randint(0, 0xFFFFFF))
     # AB: Which colors do these correspond to?
 
-plt.figure(figsize=(5,20), num='Dendrogram')
+plt.figure(figsize=(5,20), num='Dendrogram') # AB:Create visualization
 R = dendrogram(
                 Z,
                 orientation='left',
