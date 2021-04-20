@@ -1,6 +1,12 @@
 # [11.02.21] OV
 # Script writting GIFs based on MIFs
 
+# AB: - INFO - 
+# SoSci Survey 8https://www.soscisurvey.de/; 2021-04-20), has an upload quota
+# for GIFs which is different than for MP4s (640 kB vs. 64 MB). 
+# To use the larger upload cap, a transformation from GIFs 'bacl' to MP4s seems
+# plausible, to implement the stimuli for the experiment properly in SSS.
+
 ################################################################################
 # Imports
 ################################################################################
@@ -9,8 +15,10 @@ from pathlib import Path
 import time
 import cv2
 import subprocess
+import os
 
 #%% Sweep through videos
+# adjust these paths if necessary
 path_input = Path('../data/GIFs/MIT_GIFs_25FPS_480x360p_N=834_renamed').absolute()
 path_output = Path('../data/MP4s/MIT_MP4s_25FPS_480x360p_N=834_renamed').absolute()
 
@@ -46,14 +54,17 @@ out_file = path_output / (file_name[:-3] + 'mp4')
 output = str(subprocess.check_output(
   ['ffprobe', '-v', 'quiet', '-print_format', 'default', '-show_format', '-show_streams', path_2_file]
   , stderr=subprocess.STDOUT)).split('\\n')
+  # AB: Maybe one line elaborating the ffmpeg parameters?
 print(output[9][6:], output[10][7:])
 
 print(subprocess.call(
   ['ffmpeg', '-i', path_2_file,  '-movflags', 'faststart', '-pix_fmt', 'yuv420p', '-y', out_file]
   ))
+  # AB: Maybe one line elaborating the ffmpeg parameters? (if we want to change sth in the future? / link to documentation)
 
 # %% Run a subset
-# Sweep through videos in list
+# AB: Is this the code for running it on all of our MIT GIFs ? If yes please state. Ty
+# Sweep through videos in list # AB: which list?
 start = time.time()
 
 for i in range(len(l_videos)):
