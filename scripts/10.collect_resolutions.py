@@ -1,13 +1,13 @@
 # [15.04.21] OV
-# Collects widths of given video set
+# Collects the resolution (width) of videos in the video set
 ################################################################################
 # Imports
 ################################################################################
 #%% Imports
 # Image/video manipulation
-import decord
+import decord # AB: unable to import; needs installation first? how? (please comment)
 decord.bridge.set_bridge('native')
-from decord import VideoReader
+from decord import VideoReader # AB:  same see above
 import cv2
 # Path and sys related
 import os
@@ -24,17 +24,18 @@ import matplotlib.pyplot as plt
 #%% Import custom utils
 import sys, importlib
 sys.path.insert(0, '..')
-import utils
+import utils # AB: Here I'm not able to improt utils (do you know why? (is there an reuirement?)
 importlib.reload(utils) # Reload If modified during runtime
 
 #%%#############################################################################
 # Collect list of files
 ################################################################################
 #%% Define input paths
+# change path if necessary
 path_files = Path('../data/MIT_sampleVideos_RAW_final_25FPS/')
 
 #%% Sweep through input gifs set
-extension = 'mp4'
+extension = 'mp4' # a change of format would be possible here (?)
 
 l_files = []
 l_missing = []
@@ -62,7 +63,7 @@ print('Total nr. of files: ', len(l_files))
 ################################################################################
 start = time.time()
 # Parameters: ==============================================
-l_resolutions = []
+l_resolutions = [] #  initialize empty resolution list
 # ==========================================================
 
 l_cats = [] 
@@ -70,6 +71,7 @@ for i in range(len(l_files)):
   category, file_name = l_files[i]
   
   # Verbose 
+  # feedback to user every 50 cases (?)
   if i % 50 == 0: print(f'{i}/{len(l_files)}')
 
   # Load video file using decord
@@ -80,10 +82,11 @@ for i in range(len(l_files)):
     vr = VideoReader(str(path_2_file))
     
     # Get sizes
-    frame = vr.get_batch([0])
+    frame = vr.get_batch([0]) # AB: this only loads the video in the loop (?)
     
     # Append resolution per file (height, width)
-    l_resolutions.append([category, file_name, frame.shape[1], frame.shape[2]]) 
+    l_resolutions.append([category, file_name, frame.shape[1], frame.shape[2]])
+    # AB: here the resolution is extracted via shape (?)
 
 stop = time.time()
 duration = stop-start
@@ -98,4 +101,6 @@ res_df = pd.DataFrame(l_resolutions,
 print(res_df)
 
 #%% Write to csv
+# AB: What is then displayed in this csv file? (compare df above)
+# Categories | File names | Height | Width
 res_df.to_csv('spreadsheets/MIT_sampleVideos_RAW_final_25FPS_resolutions.csv')
