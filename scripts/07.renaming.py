@@ -1,7 +1,7 @@
 # [08.03.21] OV
 # Script for renaming MIF, i.e. PNG, and MP4 datasets using the input GIF dataset
 #
-# Idea:
+# Idea (OV):
 # Having the original naming of the files in the gif, png and mp4 versions:
 # create lookup table for a further renaming of the files in the format:
 # [category_i, filename_j[:-4], category_i_k], (k : {1, 2, 3})
@@ -11,10 +11,11 @@ import os
 from pathlib import Path
 import pandas as pd
 import time
-import shutil
+import shutil # AB: What for?
 import glob
 
 #%% Define input paths
+# AB: Adjust these if neessary to personal location
 path_gifs = Path('../data/TRIMMING/INPUT/MIT_GIFs_25FPS_480x360p_1.0s_TOP-3-PER-CAT_old+new')
 path_pngs = Path('../data/TRIMMING/PNGs')
 path_mp4s = Path('../data/TRIMMING/MP4s')
@@ -26,11 +27,11 @@ for path, subdirs, files in os.walk(path_mp4s):
   for name in files:
     if name[-3:] == 'mp4':
       l_mp4s.append([path.split('/')[-1],   # category
-                       name])                 # file name
+                       name])               # file name
     else:
       print('Ignored: ', name)
       
-    if len(files) < 3:
+    if len(files) < 3: # AB: What does this accomplish?
       l_missing.append([path.split('/')[-1], len(files)])
 
 if l_missing:
@@ -45,6 +46,7 @@ print('Total nr. of files: ', len(l_mp4s))
 # Create lookup table
 ################################################################################
 #%% Create lookup list based on l_mp4s
+# AB:  a bit more info abt this process please
 l_lookup = []
 
 k = 1
@@ -66,10 +68,10 @@ for i in range(len(l_mp4s)):
 df_lookup = pd.DataFrame(l_lookup,
                          columns=['category', 'fname', 'renamed'])
 
-print(df_lookup.head())
+print(df_lookup.head()) # Feedback about structure
 
 #%% Examples to access lookup dataframe
-x = 234
+x = 234  # example
 print(f'{x}-th entry has category: ')
 print(df_lookup['category'][x])
 
@@ -109,7 +111,7 @@ def check_mkdir(path):
 #%% Main renaming function
 def rename_lookup(opt, df_lookup):
   """
-  Renames the input sets to a standardized lookup table.
+  Renames the input sets to a standardized lookup table.  # AB: all 3 of them?
   
   Parameters
   ------
@@ -126,6 +128,7 @@ def rename_lookup(opt, df_lookup):
   
   
   # Define format dictionary containing input and output paths per format
+  # AB: Maybe some words considering Syntax or reference?
   dict_format = {'.mp4' : [opt['input_mp4s'], opt['output_path'] / 'MP4s'],
                  '.gif' : [opt['input_gifs'], opt['output_path'] / 'GIFs'],
                  '.png' : [opt['input_pngs'], opt['output_path'] / 'PNGs']}
@@ -135,7 +138,7 @@ def rename_lookup(opt, df_lookup):
   check_mkdir(dict_format['.gif'][1])
   check_mkdir(dict_format['.png'][1])
   
-  # Define (local) search function
+  # Define (local) search function (inside renaming main function)
   def path_file(category, filename, format='.mp4'):
     """
     Looks for file of specific format in the given folder structure
@@ -154,7 +157,7 @@ def rename_lookup(opt, df_lookup):
     if format == '.mp4':
       prefix = opt['input_mp4s']
     if format == '.gif':
-      format = '*.gif'
+      format = '*.gif'  # AB: Why does Format only switch here?
       prefix = opt['input_gifs']
     if format == '.png':
       prefix = opt['input_pngs']
@@ -166,7 +169,7 @@ def rename_lookup(opt, df_lookup):
     if len(path_) == 1:
       return path_[0] # "0" because it's a list of len=1
     else:
-      raise Exception(f'glob.glob wasn\' able to find ONLY a file at path: {path_[0]}')
+      raise Exception(f'glob.glob wasn\'t able to find ONLY a file at path: {path_[0]}')
     
   
   # Loop over df_lookup
@@ -185,11 +188,14 @@ def rename_lookup(opt, df_lookup):
       check_mkdir(dict_format[format][1] / category)
       # Copy file to output path and rename it based on lookup table
       shutil.copy(path_to_file, dict_format[format][1] / category / (df_lookup['renamed'][i] + format))
+      # AB:  What does shutil in detail?
   
   return True
 
 #%% Run renaming
+# Here the real renaming happens initiated above
 # Path to output
+# adjustpath if necessary
 path_output = Path('data/RENAMING/')
 
 # Parameter dictionary for rename_lookup() function
@@ -204,7 +210,7 @@ opt = {
 start = time.time()
 
 # Run renaming
-if rename_lookup(opt, df_lookup):
+if rename_lookup(opt, df_lookup):  # AB: Are all 3 formats renamed in this step?
   print('Succsseful!')
 
 # Print elapsed time
@@ -213,6 +219,8 @@ duration = stop-start
 print(f'\nTime elapsed: {duration:.2f}s (~ {duration/len(df_lookup):.2f}s per file)')
 
 # %% Tests
+# AB: Please elaborate, what exactly is tested here (only PNGs?)
+# adjust if necessary
 path_output = Path('../data/RENAMING/')
 
 opt = {
@@ -230,7 +238,7 @@ for path, subdirs, files in os.walk(output):
   for name in files:
     if name[-3:] == format_:
       l_test.append([path.split('/')[-1],   # category
-                       name])                 # file name
+                       name])               # file name
     else:
       print('Ignored: ', name)
 
