@@ -101,5 +101,5 @@ sns.catplot(data = df_distrib,
             y = 'Count',
             hue = 'Participants',
             kind='bar')
-# uncomment for savign plot (pay attention to output path)
+# uncomment for saving plot (pay attention to output path)
 #plt.savefig('plots/gif_distribution_per_participant.pdf')
