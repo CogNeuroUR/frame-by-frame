@@ -9,6 +9,7 @@ from pathlib import Path
 import time
 
 #%% Define input paths
+# change paths if necessary
 path_gifs = Path('../data/TRIMMING/INPUT/MIT_GIFs_25FPS_480x360p_1.0s_TOP-3-PER-CAT_old+new')
 
 #%% Sweep through input gifs set
@@ -18,7 +19,7 @@ for path, subdirs, files in os.walk(path_gifs):
   for name in files:
     if name[-3:] == 'gif':
       l_gifs.append([path.split('/')[-1],   # category
-                       name])                 # file name
+                       name])               # file name
     else:
       print('Ignored: ', name)
       
@@ -32,7 +33,7 @@ if l_gifs:
 print('Total nr. of GIFs: ', len(l_gifs))
 
 #%% ############################################################################
-# Extract from list of videos
+# Extract position of MIF in GIF (_b(eginning), _m(iddle), _e(nd)) from list of videos
 ################################################################################
 # Distribution parameters
 p = 0 # for participant ID : Lisa (Lisa, Lucca, Pauline, Johannes)
@@ -45,6 +46,8 @@ dict_participants = {}
 diving_run = False
 packaging_run = False
 smiling_run = False
+
+# AB: Please comment a bit on the logic of your loop here
 
 for i in range(len(l_gifs)):
   category, file_name = l_gifs[i]
@@ -75,6 +78,8 @@ for i in range(len(l_gifs)):
     l_e = []
     smiling_run = True
   
+  # AB: Also comment here a bit on the logik.
+  # I got it but would help speed up the understanding of the code in the future
   if file_name[-6:-4] == '_b':
     l_b.append(file_name)
   if file_name[-6:-4] == '_m':
@@ -116,8 +121,10 @@ sns.catplot(data = df_distrib,
 #plt.savefig('plots/gif_distribution_per_participant.pdf')
 
 # %% Tests
+# AB: What exactly is tested here?
 x = df_distrib['Count']
 input_list = [l_gifs[i][1] for i in range(len(l_gifs))]
+# flatten list
 flat_list = [item for sublist in x.tolist() for item in sublist]
 
 print(list(set(input_list) - set(flat_list)))
