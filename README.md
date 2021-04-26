@@ -1,10 +1,11 @@
 # MIT-Pipeline
 
-## Prerequirements / Timing
+## Prerequirements / Initial Info
 
-+ ../utils
-+ Timing?
-+ path-independence
++ utils.py - Comment on which functions in there, for what used (and when)?
++ Timing - Comment on What is the bottlenck out of these steps?
++ **platform independence**: tested under independently on CoLab, Mac and Linux = OK
++ **paths** are relative (clone GitHub repo and place necessary video files in ./input (?))
 
 
 ## Folder-Structure
@@ -66,7 +67,7 @@ having the softmax dictionary, the MIF indexes can be easily extracted
 ### 3. RDM Creation
 `02.softmax_rdm.py`
 
-*HCA** for category reduction using softmax features vectors from RN50. Having the softmax dictionary from `RN50_classification` step, feature vectors are extracted for each category present in the given video set where each vector has the length equal to `n_labels` (=339) the model is pre-trained on. These feature vectors are used to compute a distance matrix that is further used to perform a hierarchical clustering.
+**HCA** for category reduction using softmax features vectors from RN50. Having the softmax dictionary from `RN50_classification` step, feature vectors are extracted for each category present in the given video set where each vector has the length equal to `n_labels` (=339) the model is pre-trained on. These feature vectors are used to compute a distance matrix that is further used to perform a hierarchical clustering.
 
 Extracts feature vectors out of softmax dictionary and computes a distance matrix.
     
@@ -97,6 +98,24 @@ Resizing and cropping of the video data.
 `05.classification_visualization.py`
 
 Script for investigation of per-frame TopN accuracies extracted using an MiTv1 pretrained ResNet50.
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/CogNeuroUR/frame-by-frame/blob/main/video_frame_extractor.ipynb)
+
+![example image](https://github.com/CogNeuroUR/frame-by-frame/blob/main/plots/best&worst+top5/cutting_yt-UgO4jE-puiE_67.mp4.png?raw=true)
+
+
+* Having a collection of videos with pre-defined "true" categories and a pretrained classifier:
+    1. extract each frame of each video;
+    2. perform a classification of each individual frame;
+    3. extract the **per-frame accuracies** for the true category.
+* Frame extractor variants:
+    * [decord](https://github.com/dmlc/decord) [implemented]:
+        ```
+        vr = decord.VideoReader()
+        frame_id_list = range(start, stop, pace)
+        video_frames = vr.get_batch(frame_id_list).asnumpy()
+        ```
+    * [OpenCV](https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_gui/py_video_display/py_video_display.html) [TODO]
 
 ### 8. Create GIFS
 `06.write_gifs.py`
