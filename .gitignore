@@ -1,14 +1,14 @@
 # Prevent from uploading MIT_sampleVideos_RAW folder
-data/
-data/MIT_sampleVideos_RAW/*
-!data/MIT_sampleVideos_RAW/jogging
-data/MIT_sampleVideos_RAW_test
-data/MIT_sampleVideos_25FPS
-data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS
-data/resizing_tests
+input_data/
+input_data/MIT_sampleVideos_RAW/*
+!input_data/MIT_sampleVideos_RAW/jogging
+input_data/MIT_sampleVideos_RAW_test
+input_data/MIT_sampleVideos_25FPS
+input_data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS
+input_data/resizing_tests
 
 # Prevent from uploading .DS_Store
-data/.DS_Store
+input_data/.DS_Store
 .DS_Store
 # Prevent from uploading ignore/ folder
 _ignore/
@@ -20,11 +20,11 @@ _ignore/
 .vscode/
 # Prevent from uploading __pycache__
 __pycache__/
-# Prevent from uploading saved files
-saved/*
+# Prevent from uploading temp files
+temp/*
 !20210305_AB_ratorDistribution_qq1+qq2.csv
 !mifs_MIT_sampleVideos_RAW_final_25FPS_from-dict.csv
-#!saved/ResNet50_MiTv1_accuracies_per_category.pkl
+#!temp/ResNet50_MiTv1_accuracies_per_category.pkl
 
 # Ignore old scripts that were corrected AND/OR moved to "scripts" folder
 old_* 
@@ -32,8 +32,6 @@ old_*
 # Ignore extracted
 best_and_worst_frames_RN50MiTv1/
 
-# Outputs
-outputs/*
 
 # Plots
 plots/*

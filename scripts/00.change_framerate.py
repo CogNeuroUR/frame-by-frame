@@ -29,7 +29,7 @@ if not os.path.exists(path_output):
 l_videos = []
 for path, subdirs, files in os.walk(path_input):
   for name in files:
-    if name[-3:] == 'mp4': # AB: indexing -3 checks for file name?
+    if name[-3:] == 'mp4': # "x[-3:]" takes last 3 elem.s of x
       l_videos.append([path.split('/')[-1],   # category
                        name])                 # file name
     else:
@@ -50,7 +50,7 @@ start = time.time()
 j = 0 # for verbose & time measurements
 for category, file_name in l_videos[:10]:
   # Verbose
-  print(f'{j}/{len(l_videos)}'); j+=1 # AB: ?
+  print(f'{j}/{len(l_videos)}'); j+=1 # user feedback / verbose
 
   # Create output category directory if not present
   if not os.path.exists(path_output / category):
@@ -68,7 +68,7 @@ for category, file_name in l_videos[:10]:
   if keep_audio == False: # Do not keep audio
     # Define command for subprocess
     l_cmd = ['ffmpeg', '-i', path_input_file, '-c:v', 'libx264', '-r', str(i_fps), '-an', '-y', path_output_file]
-    # AB: some info abt ffmpeg params maybe from docu would help here
+    # for details on commands: http://ffmpeg.org/ffmpeg.html
     # Run command
     out = subprocess.call(l_cmd)
     # Check for errors
