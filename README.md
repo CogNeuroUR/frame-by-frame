@@ -86,30 +86,53 @@ Steps:
 ### 5. Softmax to MIF-Index
 `03.softmax_to_mif-idx.py`
 
+Extraction of MIF indexes, based on RN50 softmax accuracy dictionary.
+
 ### 6. Resiszing & Cropping
 `04.resize&crop.py`
+
+Resizing and cropping of the video data.
 
 ### 7. ResNet-50 Classification & Visualization
 `05.classification_visualization.py`
 
+Script for investigation of per-frame TopN accuracies extracted using an MiTv1 pretrained ResNet50.
+
 ### 8. Create GIFS
 `06.write_gifs.py`
+
+Script for writting GIFs based on MIF indices.
 
 ### 9. Rename Files
 `07.renaming.py`
 
+Script for renaming MIF, i.e. PNG, and MP4 datasets using the input GIF dataset.
+
 ### 10. Convert GIF to MP4
 `08.convert_gif_to_mp4.py`
+
+Script writting GIFs based on MIFs.
 
 ### 11. Extract Static Frames
 `09.extract_static_imgs.py`
 
+Script extracting static images, i.e MIFs.
+
 ### 12. Resolution Statistics
 `10.collect_resolutions.py`
+
+Collects the resolution (width) of videos in the video set.
 
 ### 13. GIF Selection Statistics
 `11.gif_selection_behaviour.py`
 `11.gif_selection_rators.py`
+
+Extracts distribution of GIFs per MIF position for each participant in the GIF selection task (using Rator distribution specified).
+
+
+
+
+
 
 
 
