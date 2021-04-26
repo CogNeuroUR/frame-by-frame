@@ -3,8 +3,8 @@
 
 ## Prerequirements / Initial Info
 
-+ utils.py - Comment on which functions in there, for what used (and when)?
-+ Timing - Comment on What is the bottlenck out of these steps?
++ **utils.py** - Comment on which functions in there, for what used (and when)?
++ **Timing** - Comment on What is the bottlenck out of these steps?
 + **platform independence**: tested under independently on CoLab, Mac and Linux = OK
 + **paths** are relative (clone GitHub repo and place necessary video files in ./input (?))
 
@@ -20,7 +20,7 @@ Output-folder, where plots, etc. are saved to during the process
 + **./scripts**
 Main Py-Scripts nad Py-Notebooks (:= core part of the pipeline)
 + **./temp**
-Temporary date (like .csv, .pkg) for further use during running of the pipeline
+Temporary data (like .csv, .pkg) for further use during running of the pipeline
 
 
 ## Steps
