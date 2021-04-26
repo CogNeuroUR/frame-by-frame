@@ -4,29 +4,29 @@ AB
 
 ## Prerequirements / Timing
 
-../utils
-Timing?
-path-independence
++ ../utils
++ Timing?
++ path-independence
 
 
 ## Folder-Structure
 
-./input
-./models
-./plots
-./scripts
-./temp
++ ./input
++ ./models
++ ./plots
++ ./scripts
++ ./temp
 
 ## Steps
 
 ![Pipeline Flowchart](/plots/MIT_pipeline_1.1_wBG.png  "Processing Pipeline Steps")
 
-1. Change Framerate
+### 1. Change Framerate
 `00.change_framerate.py`
 
 Prior to any further processing and analysis, conversion to final frame-rate has to be run.
 
-2. MIF-Extraction
+### 2. MIF-Extraction
 `01.mif_extraction_exploratory.ipynb`
 `01.mif_extraction_short.ipynb`
 
@@ -65,7 +65,7 @@ needed for all further processing steps, except for HCA. On the other hand,
 having the softmax dictionary, the MIF indexes can be easily extracted
 (see `softmax_to_mif-idx`).  
 
-3. RDM Creation
+### 3. RDM Creation
 `02.softmax_rdm.py`
 
 *HCA** for category reduction using softmax features vectors from RN50. Having the softmax dictionary from `RN50_classification` step, feature vectors are extracted for each category present in the given video set where each vector has the length equal to `n_labels` (=339) the model is pre-trained on. These feature vectors are used to compute a distance matrix that is further used to perform a hierarchical clustering.
@@ -74,7 +74,7 @@ Extracts feature vectors out of softmax dictionary and computes a distance matri
     
 *For example*, the first iteration of the video set had 306 categories each containing a varying number of videos. The feature vectors were obtained by averaging the softmax vectors over the videos, resulting in a single vector per category. Iterating over all categories results in a 2D feature array of size `(306, 339)`. This array is further used to compute a distance matrix, using a given metric as, for example, `cosine distance`. As a result, a square matrix of shape `(306, 306)` is obtained which can be further used for additional analysis like HCA, or even Representational Similarity Analysis (RSA).
 
-4. Hierarchical Cluster Analysis (HCA)
+### 4. Hierarchical Cluster Analysis (HCA)
 `03.hca.py`
 
 Performs HCA using previously obtained softmax distance matrix.
@@ -85,31 +85,31 @@ Steps:
 * Fit HC using best `n_clusters`;
 * Plot dendrogram.
 
-5. Softmax to MIF-Index
+### 5. Softmax to MIF-Index
 `03.softmax_to_mif-idx.py`
 
-6. Resiszing & Cropping
+### 6. Resiszing & Cropping
 `04.resize&crop.py`
 
-7. ResNet-50 Classification & Visualization
+### 7. ResNet-50 Classification & Visualization
 `05.classification_visualization.py`
 
-8. Create GIFS
+### 8. Create GIFS
 `06.write_gifs.py`
 
-9. Rename Files
+### 9. Rename Files
 `07.renaming.py`
 
-10. Convert GIF to MP4
+### 10. Convert GIF to MP4
 `08.convert_gif_to_mp4.py`
 
-11. Extract Static Frames
+### 11. Extract Static Frames
 `09.extract_static_imgs.py`
 
-12. Resolution Statistics
+### 12. Resolution Statistics
 `10.collect_resolutions.py`
 
-13. GIF Selection Statistics
+### 13. GIF Selection Statistics
 `11.gif_selection_behaviour.py`
 `11.gif_selection_rators.py`
 
