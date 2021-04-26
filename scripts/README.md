@@ -19,7 +19,7 @@ path-independence
 
 ## Steps
 
-![Pipeline Flowchart](../frame-by-frame/plots/MIT_pipeline_1.1.png  "Processing Pipeline Steps")
+![Pipeline Flowchart](/plots/MIT_pipeline_1.1.png  "Processing Pipeline Steps")
 
 1. Change Framerate
 `00.change_framerate.py`
