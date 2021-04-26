@@ -1,4 +1,5 @@
 # MIT-Pipeline
+[OV; AB]
 
 ## Prerequirements / Initial Info
 
@@ -10,11 +11,17 @@
 
 ## Folder-Structure
 
-+ ./input
-+ ./models
-+ ./plots
-+ ./scripts
-+ ./temp
++ **./input** (is this folder still there?)
+Input Data (Video Files from MiT-v1, etc.)
++ **./models**
+Folder containing labels and weights of the pretrained ResNet-50 (MiT-v1) neural network model
++ **./plots**
+Output-folder, where plots, etc. are saved to during the process
++ **./scripts**
+Main Py-Scripts nad Py-Notebooks (:= core part of the pipeline)
++ **./temp**
+Temporary date (like .csv, .pkg) for further use during running of the pipeline
+
 
 ## Steps
 
