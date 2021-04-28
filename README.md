@@ -3,7 +3,7 @@
 
 ## Prerequirements / Initial Info
 
-+ **utils.py** - Comment on which functions in there, for what used (and when)?
++ **[`utils.py`](utils.py)** - Utility functions used in scripts along the pipeline.
 + **Timing** - Comment on What is the bottlenck out of these steps?
 + **platform independence**: tested under independently on CoLab, Mac and Linux = OK
 + **paths** are relative (clone GitHub repo and place necessary video files in ./input (?))
@@ -11,14 +11,14 @@
 
 ## Folder-Structure
 
-+ **./input** (is this folder still there?)
++ **./input_data**
 Input Data (Video Files from MiT-v1, etc.)
 + **./models**
-Folder containing labels and weights of the pretrained ResNet-50 (MiT-v1) neural network model
+Folder containing labels and weights of the pretrained ResNet-50 (MiT-v1) neural network model, as well as representations of this/these model(s), e.g. RDM, feature maps, etc.
 + **./plots**
-Output-folder, where plots, etc. are saved to during the process
+Output-folder, where plots, etc. are saved into during the process
 + **./scripts**
-Main Py-Scripts nad Py-Notebooks (:= core part of the pipeline)
+Main Py-Scripts and Py-Notebooks (:= core part of the pipeline)
 + **./temp**
 Temporary data (like .csv, .pkg) for further use during running of the pipeline
 
