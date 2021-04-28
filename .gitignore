@@ -1,11 +1,11 @@
 # Prevent from uploading MIT_sampleVideos_RAW folder
-input_data/
-input_data/MIT_sampleVideos_RAW/*
-!input_data/MIT_sampleVideos_RAW/jogging
-input_data/MIT_sampleVideos_RAW_test
-input_data/MIT_sampleVideos_25FPS
-input_data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS
-input_data/resizing_tests
+input_data/*
+#input_data/MIT_sampleVideos_RAW/*
+!input_data/test/
+#input_data/MIT_sampleVideos_RAW_test
+#input_data/MIT_sampleVideos_25FPS
+#input_data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS
+#input_data/resizing_tests
 
 # Prevent from uploading .DS_Store
 input_data/.DS_Store

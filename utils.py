@@ -2,206 +2,24 @@
 import os
 import sys
 import time
+import numpy as np
 
 # Video processing
+from moviepy.editor import ImageSequenceClip
 if sys.version_info[1] != 8:
     import cv2
-from moviepy.editor import ImageSequenceClip
-
-import numpy as np
+    
 from scipy.cluster.hierarchy import dendrogram
-
 from matplotlib import pyplot as plt
+
 ################################################################################
 # Load categories (MiTv1)
 ################################################################################
 def load_categories(path_to_categories):
-    """Load MiTv1 categories."""
+    """Load MiTv1 categories given path to .txt file."""
     with open(path_to_categories) as f:
         return [line.rstrip() for line in f.readlines()]
 
-#%% ############################################################################
-# extract_features
-################################################################################
-def extract_features(l_categories, softmax_dict):
-  """
-  Function to extract softmax feature vectors, given an accuracies dictionary.
-  The accuracies dictionary of dictionaries contains per category, per file,
-  per frame softmax classification probabilities for the true category.
-  This has to be structured as follows:
-    {
-      category_i :
-        {
-          file_name_j : (n_frames, n_labels)
-        }
-    }
-  Parameters
-  ----------
-  l_categories : list
-    Original labels used for pretraining of the model (ordered as for the model pretraining)
-  
-  softmax_dict : dict
-    Accuracies dictionary
-      
-  Outputs
-  -------
-  features_softmax : array-like, shape (n_samples, n_features)
-    Softmax feature vectors
-  """
-  
-  l_avg_softvectors = []
-  l_labels = []
-
-  start = time.time()
-  i = 0
-  for category in l_categories:
-    #print(i, category)
-    i+=1
-    
-    # Extract files per category
-    l_files = list(softmax_dict[category].keys())
-    
-    if not l_files: # Check if any files present
-      continue
-    
-    # Collect average accuracies on the TRUE category per file
-    l_softvectors = []
-    #print(category)
-    for file_name in l_files:
-      # Determine the best frame
-      best, worst = best_worst(accuracies_dict=softmax_dict,
-                                    l_categories=l_categories,
-                                    category_name=category,
-                                    video_fname=file_name)
-      # Read softmax vector at best frame -> (n_categories, 1)
-      per_frame_accuracies = np.array(
-          softmax_dict[category][file_name])[best[0]]
-      # Append into list
-      l_softvectors.append(per_frame_accuracies)
-
-    # Convert l_softvectors to array:
-    l_softvectors = np.array(l_softvectors)
-    #print(l_softvectors.shape)
-    # Dump the mean softmax vector per category into l_avg_softvectors
-    l_avg_softvectors.append(l_softvectors.mean(axis=0))
-    l_labels.append(str(category))
-
-  # Convert l_avg_softvectors to an array of softmax features
-  features_softmax = np.array(l_avg_softvectors)
-  stop = time.time()
-  duration = stop-start
-  print(f'Time spent: {duration:.2f}s (~ {duration/len(l_categories):.4f}s per file)')
-  print(f'{len(l_avg_softvectors)} categories swept!')
-
-  """
-  # Extract indices of elements in l_categories that are also present in l_labels
-  l_idxs = [i for i in range(len(l_categories)) if l_categories[i] in l_labels]
-  # Check if it run correctly
-  assert l_labels == list(np.array(l_categories)[l_idxs])
-
-  # Trim output array to have only swept categories
-  features_softmax = features_softmax[:, l_idxs]
-  
-  df_softmax = pd.DataFrame(data=features_softmax,
-                            columns=l_labels, index=l_labels)
-  
-  return df_softmax, l_labels
-  """
-  return features_softmax, l_labels
-
-################################################################################
-# topN_per_frame
-################################################################################
-def topN_per_frame(accuracies_dict, l_categories,
-                   N=3,
-                   extract_best_worst = False,
-                   verbose = False):
-    """
-    Function to extract TopN accuracies per frame, given an accuracies dictionary.
-    Required structure of the accuracies_dict is:
-        {category_name : {video_fname : []}}
-    """
-    z = 1 # For verbose
-    topN = {}
-    
-    # load categories
-    #l_categories = load_categories()
-    
-    if extract_best_worst:
-        best_frame_dict = {}
-        worst_frame_dict = {}
-    
-    # Iterate over categories in path_prefix
-    for category_name in sorted(list(accuracies_dict.keys())):
-        print(f'{category_name} {z}/{len(list(accuracies_dict.keys()))}')
-        
-        cat_idx = [i for i in range(len(l_categories)) 
-                   if l_categories[i] == category_name][0]
-        
-        topN[category_name] = {}
-        if extract_best_worst:
-            best_frame_dict[category_name] = {}
-            worst_frame_dict[category_name] = {}
-        
-        # Iterate over files in cateogory
-        for video_fname in list(accuracies_dict[category_name].keys()):
-            # Extract accuracies as (n_frames, 1) arrays
-            per_frame_accuracies = np.array(accuracies_dict[category_name][video_fname])
-            per_frame_accuracies.reshape((per_frame_accuracies.shape[0],
-                                        len(list(accuracies_dict.keys()))))
-            per_frame_accuracies = per_frame_accuracies[:, cat_idx]
-            
-            if False:
-                print(f'\t{video_fname} : Max/Min accuracy at frame:' \
-                f' {np.argmax(per_frame_accuracies)}/{np.argmin(per_frame_accuracies)}' \
-                f' with value: {per_frame_accuracies[np.argmax(per_frame_accuracies)]}' \
-                f' / {per_frame_accuracies[np.argmin(per_frame_accuracies)]}')
-
-            if extract_best_worst:
-                # Determined the index of the frame w/ max accuracy and write to dict
-                best_frame_dict[category_name][video_fname] = (np.argmax(per_frame_accuracies),
-                                                               per_frame_accuracies[np.argmax(per_frame_accuracies)])
-                worst_frame_dict[category_name][video_fname] = (np.argmin(per_frame_accuracies),
-                                                                per_frame_accuracies[np.argmin(per_frame_accuracies)])
-                
-            # Iterate over frames
-            topN[category_name][video_fname] = {}
-            for frame in range(len(accuracies_dict[category_name][video_fname])):
-
-                frame_vals = accuracies_dict[category_name][video_fname][frame]
-                
-                indices = np.argsort(frame_vals)[::-1][:len(frame_vals)]
-                values = np.array(frame_vals)[indices]
-                
-                topN[category_name][video_fname][frame] = []
-                
-                # Check if "category" is in TopN:
-                if cat_idx in indices[:N]:
-                    # l_categories[idx], sorted_acc[i]
-                    #print(f'In Top{N}')
-                    for i in range(len(indices[:N])):
-                        idx = indices[i]
-                        #print(idx, values[i])
-                        topN[category_name][video_fname][frame].append([l_categories[idx],
-                                                                        values[i]])
-                else:
-                    #print(f'Not in Top{N}')
-                    for i in range(len(indices[:N-1])):
-                        idx = indices[i]
-                        #print(idx, values[i])
-                        topN[category_name][video_fname][frame].append([l_categories[idx],
-                                                                        values[i]])
-                    #print(values[cat_idx])
-                    
-                    # Check the index here!!!
-                    topN[category_name][video_fname][frame].append([l_categories[cat_idx],
-                                                                    frame_vals[cat_idx]])   
-        z += 1
-    
-    if extract_best_worst:
-        return topN, best_frame_dict, worst_frame_dict
-    else:
-        return topN
 
 ################################################################################
 # topN categories per file:
@@ -210,43 +28,62 @@ def topN_categories(accuracy_array, l_categories,
                     N=5,
                     make_plots=False,
                     verbose=False):
-    """
-    Function to extract TopN categories given accuracies of a file
-    
-    Returns the indexes of top N categories
-    """
-    # load categories
-    #labels = load_categories()
-    
-    # Extract the mean accuracies over frames
-    mean_accuracies = np.mean(accuracy_array, axis=0)
-    
-    indices = np.argsort(mean_accuracies)[::-1][:len(mean_accuracies)]
-    values = np.array(mean_accuracies)[indices]
-    
-    topN = []
-    
-    if verbose:
-        print(f'--Top {N} Actions:')
-    for i in range(N):
-        if verbose:    
-            print('{:.3f} -> {}'.format(values[i], l_categories[indices[i]]))
-        topN.append(indices[i])
-    
-    if make_plots:
-        fig, ax = plt.subplots()
-        ax.bar(np.arange(len(mean_accuracies)),
-            height = mean_accuracies)
-        for ind, label in enumerate(ax.get_xticklabels()):
-            if ind % 10 == 0:  # every 10th label is kept
-                label.set_visible(True)
-            else:
-                label.set_visible(False)
-        ax.set_title(f'Prediction accuracty')
-        ax.set_xlabel('Frame nr.')
-        ax.set_ylabel('Prediction accuracy (softmax)')
-        plt.show()
-    return topN
+  """
+  Extracts TopN categories' indices given softmax ccuracies for a file
+  
+  Parameters
+  ----------
+  accuracy_array : numpy.ndarray
+    Accuracy array
+  l_categories : list
+    Labels used to train the model.
+  N : int
+    TopN categories to inspect. Default: 5
+  make_plots : bool
+    If to make accuracy plots. Default: False
+  verbose : bool
+    For user feedback. Default: False
+
+  Returns
+  -------
+  topN : list
+    Indices of topN categories.
+  """
+  
+  # Extract the mean accuracies over frames
+  mean_accuracies = np.mean(accuracy_array, axis=0)
+  
+  # Collect ordered indices & acc. values
+  indices = np.argsort(mean_accuracies)[::-1][:len(mean_accuracies)]
+  values = np.array(mean_accuracies)[indices]
+  
+  topN = []
+  
+  # User feedback
+  if verbose:
+    print(f'--Top {N} Actions:')
+  for i in range(N):
+    if verbose:    
+      print('{:.3f} -> {}'.format(values[i], l_categories[indices[i]]))
+    topN.append(indices[i])
+
+  # Make plots
+  if make_plots:
+    fig, ax = plt.subplots()
+    ax.bar(np.arange(len(mean_accuracies)),
+           height = mean_accuracies)
+    for ind, label in enumerate(ax.get_xticklabels()):
+        if ind % 10 == 0:  # every 10th label is kept
+          label.set_visible(True)
+        else:
+          label.set_visible(False)
+    ax.set_title(f'Prediction accuracty')
+    ax.set_xlabel('Frame nr.')
+    ax.set_ylabel('Prediction accuracy (softmax)')
+    plt.show()
+
+  return topN
+
 
 ################################################################################
 # topN_per_file
@@ -257,75 +94,79 @@ def topN_per_file(accuracies_dict, l_categories,
                   video_fname='yt-bX3KmVN89Co_1.mp4',
                   extract_best_worst = False,
                   verbose = False):
-    """
-    Function to extract TopN accuracies per frame, given an accuracies dictionary,
-    the name of the category and file to be examined:
-    Required structure of the accuracies_dict is:
-        {category_name : {video_fname : []}}
-    """
-    # load categories
-    #l_categories = load_categories()
-    
-    if extract_best_worst:
-        best_frame_dict = []
-        worst_frame_dict = []
-    
-    cat_idx = [i for i in range(len(l_categories))
-               if l_categories[i] == category_name][0]
+  """
+  Function to extract TopN accuracies per frame, given an accuracies dictionary,
+  the name of the category and file to be examined:
+  Required structure of the accuracies_dict is:
+      {category_name : {video_fname : []}}
+  """
 
-    # Extract accuracies as (n_frames, 1) arrays
-    per_frame_accuracies = np.array(accuracies_dict[category_name][video_fname])
-    #per_frame_accuracies.reshape((per_frame_accuracies.shape[0],
-    #                            len(list(accuracies_dict.keys()))))
-    #per_frame_accuracies = per_frame_accuracies[:, cat_idx]
-    
-    ass = per_frame_accuracies.reshape((per_frame_accuracies.shape[0],
-                                            len(list(accuracies_dict.keys()))))
-    ass = ass[:, cat_idx]
-    if verbose:
-        print(f'\t{video_fname} : Max/Min accuracy at frame:' \
-        f' {np.argmax(ass)}/{np.argmin(ass)}' \
-        f' with value: {ass[np.argmax(ass)]}' \
-        f' / {ass[np.argmin(ass)]}')
+  if extract_best_worst:
+    best_frame_dict = []
+    worst_frame_dict = []
+  
+  # Extract index of given category (0-338)
+  cat_idx = [i for i in range(len(l_categories))
+              if l_categories[i] == category_name][0]
 
-    if extract_best_worst:
-        # Determined the index of the frame w/ max accuracy and write to dict
-        best_frame = (np.argmax(ass),
-                      ass[np.argmax(ass)])
-        worst_frame = (np.argmin(ass),
-                       ass[np.argmin(ass)])
+  # Extract accuracies for all categories for given file
+  per_frame_accuracies = np.array(accuracies_dict[category_name][video_fname])
+  
+  # Reshape to (n_frames, n_labels)
+  ass = per_frame_accuracies.reshape((per_frame_accuracies.shape[0],
+                                      len(list(accuracies_dict.keys()))))
+  # Extract values only from TRUE label: (n_frames, 1)
+  ass = ass[:, cat_idx]
+
+  # For user feedback
+  if verbose:
+    print(f'\t{video_fname} : Max/Min accuracy at frame:' \
+    f' {np.argmax(ass)}/{np.argmin(ass)}' \
+    f' with value: {ass[np.argmax(ass)]}' \
+    f' / {ass[np.argmin(ass)]}')
+
+  # Check if to additionally extract best and worst frame idx of TRUE category
+  if extract_best_worst:
+    # Determined the index of the frame w/ max accuracy and write to dict
+    best_frame = (np.argmax(ass),
+                  ass[np.argmax(ass)])
+    worst_frame = (np.argmin(ass),
+                    ass[np.argmin(ass)])
+
+  # Initialize list for per-frame accuracy values of the topN categories
+  topN = []
+  
+  # Check if "category" is in TopN:
+  if cat_idx in topN_categories(per_frame_accuracies, l_categories=l_categories,N=N):
+    indices = topN_categories(per_frame_accuracies, l_categories=l_categories,N=N)
+    # Iterate over frames
+    for frame in per_frame_accuracies:
+      temp_list = []
+      # Extract per-frame accuracy values:
+      for idx in indices:
+          #print(idx, values[i])
+          temp_list.append(frame[idx])
+      # Append extracted to topN:
+      topN.append(temp_list)
+  else:
+    # Extract values only for topN-1 categories and append values for TRUE one
+    indices = topN_categories(per_frame_accuracies, l_categories=l_categories,N=N-1)
+    indices.append(cat_idx)
     
-    # Initialize empty list
-    topN = []
-    
-    # Check if "category" is in TopN:
-    if cat_idx in topN_categories(per_frame_accuracies, l_categories=l_categories,N=N):
-        indices = topN_categories(per_frame_accuracies, l_categories=l_categories,N=N)
-        # Iterate over frames
-        for frame in per_frame_accuracies:
-            temp_list = []
-            # Extract per-frame accuracy values:
-            for idx in indices:
-                #print(idx, values[i])
-                temp_list.append(frame[ idx])
-            # Append extracted to topN:
-            topN.append(temp_list)
-    else:
-        indices = topN_categories(per_frame_accuracies, l_categories=l_categories,N=N-1)
-        indices.append(cat_idx)
-        # Iterate over frames
-        for frame in per_frame_accuracies:
-            temp_list = []
-            # Extract per-frame accuracy values:
-            for idx in indices:
-                temp_list.append(frame[idx])
-            # Append extracted to topN:
-            topN.append(temp_list)
-            
-    if extract_best_worst:
-        return np.array(l_categories)[indices], np.array(topN).T, best_frame, worst_frame
-    else:
-        return np.array(l_categories)[indices], np.array(topN).T
+    # Iterate over frames
+    for frame in per_frame_accuracies:
+      temp_list = []
+      # Extract per-frame accuracy values:
+      for idx in indices:
+          temp_list.append(frame[idx])
+      # Append extracted to topN:
+      topN.append(temp_list)
+      
+  if extract_best_worst:
+    return np.array(l_categories)[indices], np.array(topN).T, best_frame, worst_frame
+  else:
+    return np.array(l_categories)[indices], np.array(topN).T
+
 
 ################################################################################
 # best_worst
@@ -334,35 +175,132 @@ def best_worst(accuracies_dict, l_categories,
                category_name='applauding',
                video_fname='yt-bX3KmVN89Co_1.mp4',
                verbose = False):
-    """
-    Function to extract best and worst frames per file, given an accuracies dictionary,
-    the name of the category and file to be examined:
-    Required structure of the accuracies_dict is:
-        {category_name : {video_fname : []}}
-    """
-    # load categories
-    #l_categories = load_categories()
+  """
+  Extracts best and worst frames per file, given an accuracies dictionary,
+  the name of the category and file to be examined.
+
+  Parameters
+  ----------
+  accuracies_dict : dict
+    Dictionary of accuracies of structure
+    {category_name : {video_fname : []}}
+
+  l_categories : list
+    Labels used to train the model.
+  category_name : str
+    Category name. Default: 'applauding'
+  video_fname : str
+    Video filename. Default: 'yt-bX3KmVN89Co_1.mp4'
+  verbose : bool
+    For user feedback. Default: False
+
+  Returns
+  -------
+  best_frame : tuple
+    (Best frame idx, accuracy value)
+  worst_frame) : tuple
+    (Worst frame idx, accuracy value)
+  """
+  cat_idx = [i for i in range(len(l_categories))
+              if l_categories[i] == category_name][0]
+
+  # Extract accuracies as (n_frames, 1) arrays
+  per_frame_accuracies = np.array(accuracies_dict[category_name][video_fname])
+
+  ass = per_frame_accuracies.reshape((per_frame_accuracies.shape[0],
+                                          len(list(accuracies_dict.keys()))))
+  ass = ass[:, cat_idx]
+  if verbose:
+      print(f'\t{video_fname} : Max/Min accuracy at frame:' \
+      f' {np.argmax(ass)}/{np.argmin(ass)}' \
+      f' with value: {ass[np.argmax(ass)]}' \
+      f' / {ass[np.argmin(ass)]}')
+
+  # Determined the index of the frame w/ max accuracy and write to dict
+  best_frame = (np.argmax(ass), ass[np.argmax(ass)])
+  worst_frame = (np.argmin(ass), ass[np.argmin(ass)])
+  
+  return best_frame, worst_frame
+
+
+#%% ############################################################################
+# extract_features
+################################################################################
+def extract_features(l_categories, softmax_dict):
+  """
+  Extracts softmax feature vectors, given an accuracies dictionary.
+  The accuracies dictionary of dictionaries contains per category, per file,
+  per frame softmax classification probabilities for the true category.
+
+  Parameters
+  ----------
+  l_categories : list
+    Original labels used for pretraining of the model (ordered as for the model pretraining)
+  
+  softmax_dict : dict
+    Accuracies dictionary of following structure:
+    {
+      category_i :
+        {
+          file_name_j : (n_frames, n_labels)
+        }
+    }
+      
+  Outputs
+  -------
+  features_softmax : array-like, shape (n_samples, n_features)
+    Softmax feature vectors
+  """
+  # Idea:
+  # Iterate over categories in l_categories
+
+  # Define empty lists for collecting features vectors & labels
+  l_avg_softvectors = []
+  l_labels = []
+
+  start = time.time()   # For elapsed time
+
+  for category in l_categories:
     
-    cat_idx = [i for i in range(len(l_categories))
-               if l_categories[i] == category_name][0]
-
-    # Extract accuracies as (n_frames, 1) arrays
-    per_frame_accuracies = np.array(accuracies_dict[category_name][video_fname])
-
-    ass = per_frame_accuracies.reshape((per_frame_accuracies.shape[0],
-                                            len(list(accuracies_dict.keys()))))
-    ass = ass[:, cat_idx]
-    if verbose:
-        print(f'\t{video_fname} : Max/Min accuracy at frame:' \
-        f' {np.argmax(ass)}/{np.argmin(ass)}' \
-        f' with value: {ass[np.argmax(ass)]}' \
-        f' / {ass[np.argmin(ass)]}')
-
-    # Determined the index of the frame w/ max accuracy and write to dict
-    best_frame = (np.argmax(ass), ass[np.argmax(ass)])
-    worst_frame = (np.argmin(ass), ass[np.argmin(ass)])
+    # Extract filenames per category
+    l_files = list(softmax_dict[category].keys())
     
-    return best_frame, worst_frame
+    if not l_files: # Check if any files present in current category
+      continue
+    
+    # Iterate over files & collect avg accuracies on the TRUE category per file
+    l_softmax = [] # list to collect raw feature vectors
+    for file_name in l_files:
+      # Determine the best (and worst) frame idx.s
+      best, worst = best_worst(accuracies_dict=softmax_dict,
+                               l_categories=l_categories,
+                               category_name=category,
+                               video_fname=file_name)
+      
+      # Read softmax vector at best frame -> (n_categories, 1)
+      per_frame_accuracies = np.array(
+        softmax_dict[category][file_name])[best[0]]
+      # Append into raw list
+      l_softmax.append(per_frame_accuracies)
+
+    # Convert l_softmax to array:
+    l_softmax = np.array(l_softmax)
+    
+    # Append the mean softmax vector per category into l_avg_softvectors
+    l_avg_softvectors.append(l_softmax.mean(axis=0))
+    # Append TRUE category
+    l_labels.append(str(category))
+
+  # Convert l_avg_softvectors to an array of softmax features
+  features_softmax = np.array(l_avg_softvectors)
+  
+  # For elapsed time
+  stop = time.time()
+  duration = stop-start
+  print(f'Time spent: {duration:.2f}s (~ {duration/len(l_categories):.4f}s per file)')
+  print(f'{len(l_avg_softvectors)} categories swept!')
+
+  return features_softmax, l_labels
 
 ################################################################################
 # Dendrogram plotting (scikit-learn.org)
