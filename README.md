@@ -3,15 +3,15 @@
 
 ## Prerequirements / Initial Info
 
-+ **utils.py** - Comment on which functions in there, for what used (and when)?
-+ **Timing** - Comment on What is the bottlenck out of these steps?
++ **utils.py** - **TODO: Comment on which functions in there, for what used (and when)?**
++ **Timing** - **TODO: Comment on What is the bottlenck out of these steps?**
 + **platform independence**: tested under independently on CoLab, Mac and Linux = OK
 + **paths** are relative (clone GitHub repo and place necessary video files in ./input (?))
 
 
 ## Folder-Structure
 
-+ **./input** (is this folder still there?)
++ **./input** (TODO: is this folder still there?)
 Input Data (Video Files from MiT-v1, etc.)
 + **./models**
 Folder containing labels and weights of the pretrained ResNet-50 (MiT-v1) neural network model
@@ -94,12 +94,12 @@ Steps:
 ### 5. Softmax to MIF-Index
 `03.softmax_to_mif-idx.py`
 
-Extraction of MIF indexes, based on RN50 softmax accuracy dictionary.
+Extraction of MIF indexes, based on RN50 softmax accuracy dictionary. Indices stored in pandas data frame.
 
 ### 6. Resiszing & Cropping
 `04.resize&crop.py`
 
-Resizing and cropping of the video data.
+Resizing and cropping of the video data via ffmpeg. Also includes checking the width x height (resolution) ratio via decord.
 
 ### 7. ResNet-50 Classification & Visualization
 `05.classification_visualization.py`
@@ -129,31 +129,68 @@ Script for investigation of per-frame TopN accuracies extracted using an MiTv1 p
 
 Script for writting GIFs based on MIF indices.
 
+Three different GIFs were extracted depending on the positioning to the MIF (most informative frame):
+* '..._b.GIF' - MIF at the beginning, followed by 30 frames (Δt = 1s; FPS = 30 FPS (compare above))
+* '..._m.GIF' - MIF in the middle of the GIF (+/- 15 frames)
+* '..._e.GIF' - MIF at the end of the GIF (30 frames ending with GIF)
+
+**Note:** Depending on the input video, sometimes not all the three different GIFs exist, due to the MIF index (and its position in the video).
+(Comment: This was ok for us, as afterwards, there followed a manual selection process by human rators anyhow)
+
 ### 9. Rename Files
 `07.renaming.py`
 
 Script for renaming MIF, i.e. PNG, and MP4 datasets using the input GIF dataset.
+The script was run for renaming (1) the original MP4s (, (2) the extracted MIF PNGs (see also below.)) and (3) the extracted GIFs (see above)
+
+To have an overall consitent naming scheme, the videos were named as examplars form the category they were from.
+E.g.: 'aiming_1.GIF', 'cutting_2.MP4' (or 'writing_3.PNG')
+
+The conversion from original raw file names to renamed file names follwoing the pattern described above is additionaly stored and archived in a lookup-table.
 
 ### 10. Convert GIF to MP4
 `08.convert_gif_to_mp4.py`
 
 Script writting GIFs based on MIFs.
 
+**Info:** [SoSciSurvey](https://www.soscisurvey.de/) (2021-04-20), has an upload quota for GIFs which is different than for MP4s (640 kB vs. 64 MB).
+
+As using that platform for later batch human stimuli evaluation, re-transforming of the GIFs to videos was exectuted.
+Note that these videos differ from the original videos (e.g. duration: 1s; pre-selection of MIF positioning in video; etc.)
+
 ### 11. Extract Static Frames
 `09.extract_static_imgs.py`
 
 Script extracting static images, i.e MIFs.
+For extraction the module PIL and VideoReader are used.
+This script may produce both JPGs oder PNGs. 
+
+**Note:** Renaming might also be run again after this steps. The scripts might be also run in slightly differed order than displayed above.
 
 ### 12. Resolution Statistics
 `10.collect_resolutions.py`
 
-Collects the resolution (width) of videos in the video set.
+Collects the resolution (width) of videos in the video set. This script uses decord and cv2 for accomplishing the collection of resolution of input videos.
+The final distributions are exported as csv-file for further visualization a./o. statistics.
 
 ### 13. GIF Selection Statistics
 `11.gif_selection_behaviour.py`
 `11.gif_selection_rators.py`
 
 Extracts distribution of GIFs per MIF position for each participant in the GIF selection task (using Rator distribution specified).
+
+In a step above, up to (!) three different GIFs were generated using the MIF indices. Four different human rators (2021-04-28) selected one of these up to three different possible GIFs.
+To check individual rating behavior (for bias, overall tendencies over rators, etc.), the individual selections are collected, quantified and visualized.
+
+The first script extracts the distribution of GIFs per MIF position for each participant in the GIF selection task sepcified (= rating).
+The second script reads in a input csv (containing individual rating behavior / categories).
+Both parts plot the distribution for manual review. Note that the second is closer to the actual behavior due to the more precise repproduction of actual human rating behavior (thrrough the input csv).
+
+
+
+
+
+
 
 
 
