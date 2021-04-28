@@ -1,7 +1,7 @@
 # Prevent from uploading MIT_sampleVideos_RAW folder
 input_data/*
 #input_data/MIT_sampleVideos_RAW/*
-!input_data/test/*
+!input_data/test/
 #input_data/MIT_sampleVideos_RAW_test
 #input_data/MIT_sampleVideos_25FPS
 #input_data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS
