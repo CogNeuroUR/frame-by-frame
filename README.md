@@ -3,24 +3,18 @@
 
 ## Prerequirements / Initial Info
 
-<<<<<<< HEAD
-+ **utils.py** - **TODO: Comment on which functions in there, for what used (and when)?**
-+ **Timing** - **TODO: Comment on What is the bottlenck out of these steps?**
-=======
 + **[`utils.py`](utils.py)** - Utility functions used in scripts along the pipeline.
-+ **Timing** - Comment on What is the bottlenck out of these steps?
->>>>>>> 70cb9d7e55dc703d233cb4e5e5ab532db103c910
++ **Timing** - **TODO**: @ OV
+How long was the overall running time?
+What was the most time consuming step?
+(how long?)
 + **platform independence**: tested under independently on CoLab, Mac and Linux = OK
 + **paths** are relative (clone GitHub repo and place necessary video files in ./input (?))
 
 
 ## Folder-Structure
 
-<<<<<<< HEAD
-+ **./input** (TODO: is this folder still there?)
-=======
 + **./input_data**
->>>>>>> 70cb9d7e55dc703d233cb4e5e5ab532db103c910
 Input Data (Video Files from MiT-v1, etc.)
 + **./models**
 Folder containing labels and weights of the pretrained ResNet-50 (MiT-v1) neural network model, as well as representations of this/these model(s), e.g. RDM, feature maps, etc.
