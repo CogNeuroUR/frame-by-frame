@@ -9,7 +9,7 @@ How long was the overall running time?
 What was the most time consuming step?
 (how long?)
 + **platform independence**: tested under independently on CoLab, Mac and Linux = OK
-+ **paths** are relative (clone GitHub repo and place necessary video files in ./input (?))
++ **paths** are relative (clone GitHub repo and place necessary video files in ./input_data)
 
 
 ## Folder-Structure
