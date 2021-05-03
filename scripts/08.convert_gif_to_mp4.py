@@ -19,8 +19,8 @@ import os
 
 #%% Sweep through videos
 # adjust these paths if necessary
-path_input = Path('../data/GIFs/MIT_GIFs_25FPS_480x360p_N=834_renamed').absolute()
-path_output = Path('../data/MP4s/MIT_MP4s_25FPS_480x360p_N=834_renamed').absolute()
+path_input = Path('../input_data/GIFs/MIT_GIFs_25FPS_480x360p_N=834_renamed').absolute()
+path_output = Path('../input_data/MP4s/MIT_MP4s_25FPS_480x360p_N=834_renamed').absolute()
 
 if not os.path.exists(path_output):
   os.makedirs(path_output)

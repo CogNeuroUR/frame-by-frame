@@ -8,13 +8,12 @@ from pathlib import Path
 import time
 import cv2
 import subprocess
-
-# AB: import os (?)
+import os
 
 #%% Sweep through videos
 # AB: change paths if necessary (might be run locally / dependencies (!))
-path_input = Path('../data/MIT_additionalVideos_25FPS/').absolute()
-path_output = Path('../data/MIT_additionalVideos_25FPS_480x360p').absolute()
+path_input = Path('../input_data/MIT_additionalVideos_25FPS/').absolute()
+path_output = Path('../input_data/MIT_additionalVideos_25FPS_480x360p').absolute()
 
 if not os.path.exists(path_output):
   os.makedirs(path_output)
@@ -45,7 +44,7 @@ width = 480
 #file_name = 'yt-5r5WH6nBey8_235.mp4'
 category = 'burying'
 file_name = 'yt-_6awwB9VXzo_13.mp4'
-path_2_file = str(Path(f'../data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{file_name}').absolute())
+path_2_file = str(Path(f'../input_data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{file_name}').absolute())
 out_file = path_output / file_name
 
 output = str(subprocess.check_output(
@@ -153,7 +152,7 @@ print('Test finished!')
 
 # %% For statistics
 # AB: change path if necessary
-path_output = Path('../data/MIT_additionalVideos_25FPS_480x360p').absolute()
+path_output = Path('../input_data/MIT_additionalVideos_25FPS_480x360p').absolute()
 l_processed = []
 for path, subdirs, files in os.walk(path_output):
   for name in files:

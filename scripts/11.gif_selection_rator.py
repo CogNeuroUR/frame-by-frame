@@ -9,7 +9,7 @@ from pathlib import Path
 
 #%% Define input paths
 # change path if needed
-path_gifs = Path('../data/TRIMMING/INPUT/MIT_GIFs_25FPS_480x360p_1.0s_TOP-3-PER-CAT_old+new')
+path_gifs = Path('../input_data/TRIMMING/INPUT/MIT_GIFs_25FPS_480x360p_1.0s_TOP-3-PER-CAT_old+new')
 
 #%% Sweep through input gifs set # AB: why?
 l_gifs = []
@@ -34,7 +34,7 @@ print('Total nr. of GIFs: ', len(l_gifs))
 #%% Load Rator distribution
 import pandas as pd
 # rator distribution stored in .csv-file (displays which rator rated which categories)
-path_sheet = Path('../saved/20210305_AB_ratorDistribution_qq1+qq2.csv')
+path_sheet = Path('../temp/20210305_AB_ratorDistribution_qq1+qq2.csv')
 df_rator = pd.read_csv(path_sheet,
                        skiprows=[0],
                        names=['LK', 'PS', 'LS', 'JS'],

@@ -2,7 +2,7 @@
 import os
 from pathlib import Path
 
-path_gifs = Path('data/MIT_GIFs_25FPS_480x360p_1.0s/')
+path_gifs = Path('input_data/MIT_GIFs_25FPS_480x360p_1.0s/')
 
 l_1 = 0
 l_2 = 0

@@ -18,7 +18,7 @@ import PIL # AB: causes errors at mi Win: 'Unable to import 'PIL'pylint(import-e
 #%% Load MIF csv
 # AB: a bit more info abt what is stored in the csv (1 line)
 # change path if necessary
-path_mifs = Path('../saved/mifs.csv')
+path_mifs = Path('../temp/mifs.csv')
 mifs = pd.read_csv(path_mifs, usecols=['category', 'fname', 'mif_idx'])
 print(mifs)
   
@@ -27,7 +27,7 @@ print(mifs)
 ################################################################################
 category = 'arresting'
 file_name = 'yt-aAVfUYxx12g_18.mp4'
-path_2_file = Path(f'..data/single_video_25FPS_480x360p/{category}/{file_name}')
+path_2_file = Path(f'..input_data/single_video_25FPS_480x360p/{category}/{file_name}')
 
 best = mifs.loc[(mifs['category'] == category) & (mifs['fname'] == file_name)]['mif_idx'].values[0]
 print('Best frame idx: ', best)
@@ -39,7 +39,7 @@ plt.imshow(mif)
 plt.show()
 
 im = PIL.Image.fromarray(mif)
-im.save(Path(f'data/single_video_25FPS_480x360p/{category}/{file_name[:-4]}.png'))
+im.save(Path(f'input_data/single_video_25FPS_480x360p/{category}/{file_name[:-4]}.png'))
 
 #%% ############################################################################
 # Test on a subset
@@ -47,7 +47,7 @@ im.save(Path(f'data/single_video_25FPS_480x360p/{category}/{file_name[:-4]}.png'
 #%%
 N = 20
 # change path if necessary
-path_dataset = Path('data/MIT_sampleVideos_RAW_final_25FPS_480x360p/')
+path_dataset = Path('input_data/MIT_sampleVideos_RAW_final_25FPS_480x360p/')
 # create random subset sample
 subset = mifs.sample(n=N, random_state=2)
 
@@ -65,8 +65,8 @@ for index, row in subset.iterrows():
 
   im = PIL.Image.fromarray(mif)
   # save sample both as PNG and JPG
-  im.save(Path(f'data/MIFs/test/{category}_{file_name[:-4]}.png'))
-  im.save(Path(f'data/MIFs/test/{category}_{file_name[:-4]}.jpeg'))
+  im.save(Path(f'input_data/MIFs/test/{category}_{file_name[:-4]}.png'))
+  im.save(Path(f'input_data/MIFs/test/{category}_{file_name[:-4]}.jpeg'))
 
 
 #%% ############################################################################
@@ -80,8 +80,8 @@ start = time.time()
 
 mif_format = 'png' # or 'png'
 # change paths if necessary
-path_dataset = Path('data/MIT_additionalVideos_25FPS_480x360p/')
-path_output = Path(f'data/MIFs/MIT_additionalMIFs_480x360p_{mif_format}')
+path_dataset = Path('input_data/MIT_additionalVideos_25FPS_480x360p/')
+path_output = Path(f'input_data/MIFs/MIT_additionalMIFs_480x360p_{mif_format}')
 
 if not os.path.exists(path_output):
   os.mkdir(path_output)
@@ -122,7 +122,7 @@ print(f'\nTime spent: {duration:.2f}s (~ {duration/i:.3f}s per file)')
 
 #%%
 # AB: What is this for?
-path_mifs = Path('data/MIT_sampleVideos_RAW_final_25FPS_480x360p/mifs.csv')
+path_mifs = Path('input_data/MIT_sampleVideos_RAW_final_25FPS_480x360p/mifs.csv')
 mifs = pd.read_csv(path_mifs, usecols=['category', 'fname', 'mif_idx'])
 len(mifs.category.unique())
 # %%

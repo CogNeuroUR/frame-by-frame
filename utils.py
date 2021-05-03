@@ -114,7 +114,7 @@ def topN_per_file(accuracies_dict, l_categories,
   
   # Reshape to (n_frames, n_labels)
   ass = per_frame_accuracies.reshape((per_frame_accuracies.shape[0],
-                                      len(list(accuracies_dict.keys()))))
+                                      len(l_categories)))
   # Extract values only from TRUE label: (n_frames, 1)
   ass = ass[:, cat_idx]
 
@@ -208,7 +208,7 @@ def best_worst(accuracies_dict, l_categories,
   per_frame_accuracies = np.array(accuracies_dict[category_name][video_fname])
 
   ass = per_frame_accuracies.reshape((per_frame_accuracies.shape[0],
-                                          len(list(accuracies_dict.keys()))))
+                                          len(l_categories)))
   ass = ass[:, cat_idx]
   if verbose:
       print(f'\t{video_fname} : Max/Min accuracy at frame:' \
@@ -263,6 +263,9 @@ def extract_features(l_categories, softmax_dict):
   for category in l_categories:
     
     # Extract filenames per category
+    if category not in softmax_dict:
+      continue
+
     l_files = list(softmax_dict[category].keys())
     
     if not l_files: # Check if any files present in current category
@@ -306,7 +309,7 @@ def extract_features(l_categories, softmax_dict):
 ################################################################################
 # GIF writting using moviepy
 ################################################################################
-def gif(filename, array, fps=10, scale=1.0, scale_width=None):
+def gif(filename, array, fps=10, scale=1.0, scale_width=None, rewrite=False):
     """Creates a gif given a stack of images using moviepy
     Notes
     -----
@@ -339,6 +342,13 @@ def gif(filename, array, fps=10, scale=1.0, scale_width=None):
     fname, _ = os.path.splitext(filename)
     filename = fname + '.gif'
 
+    # Check if files already exists:
+    if os.path.exists(filename):
+      if rewrite == True:
+        pass
+      else:
+        raise Exception('File already exists. Exiting...')
+    
     # copy into the color dimension if the images are black and white
     if array.ndim == 3:
         array = array[..., np.newaxis] * np.ones(3)
@@ -351,7 +361,7 @@ def gif(filename, array, fps=10, scale=1.0, scale_width=None):
     else:
         clip = ImageSequenceClip(list(array), fps=fps)
     #clip.write_gif(filename, fps=fps, program='ffmpeg') #, program='ffmpeg') # or 'ImageMagick'
-    clip.write_gif(filename, fps=fps, progress_bar=False)
+    clip.write_gif(filename, fps=fps)
     return clip
 
 

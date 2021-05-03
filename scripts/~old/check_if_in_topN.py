@@ -22,7 +22,9 @@ import pandas as pd
 # Plots
 import seaborn as sns
 import matplotlib
-#%matplotlib qt
+## Change matplotlib backend to Qt
+%matplotlib qt
+# "%" specifies magic commands in ipython
 import matplotlib.pyplot as plt
 from PIL import Image
 # Widgets
@@ -40,7 +42,7 @@ importlib.reload(utils) # Reload If modified during runtime
 ################################################################################
 # %% Define paths
 path_prefix = Path().parent.absolute()
-dict_path = path_prefix / 'saved/full/accuracies_per_category_full_mitv1.pkl'
+dict_path = path_prefix / 'temp/full/accuracies_per_category_full_mitv1.pkl'
 # Load from file
 f = open(dict_path, 'rb')
 accuracies_per_category = pickle.load(f)
@@ -141,7 +143,7 @@ for i in range(N_samples):
                                                     extract_best_worst=True)
         
     # Load video file using decord
-    path_2_file = path_prefix / f'data/MIT_sampleVideos_RAW/{c_name}/{f_name}'
+    path_2_file = path_prefix / f'input_data/MIT_sampleVideos_RAW/{c_name}/{f_name}'
     vr = VideoReader(str(path_2_file))
 
     # Extract best and worst frames by their label
@@ -207,7 +209,7 @@ for i in range(N_samples):
                                                     extract_best_worst=True)
         
     # Load video file using decord
-    path_2_file = path_prefix / f'data/MIT_sampleVideos_RAW/{c_name}/{f_name}'
+    path_2_file = path_prefix / f'input_data/MIT_sampleVideos_RAW/{c_name}/{f_name}'
     vr = VideoReader(str(path_2_file))
 
     # Extract best and worst frames by their label
