@@ -1,5 +1,5 @@
 # MIT-Pipeline
-[OV; AB
+[OV; AB]
 
 ## Prerequirements / Initial Info
 
