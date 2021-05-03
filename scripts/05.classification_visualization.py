@@ -18,7 +18,9 @@ from pathlib import Path
 import numpy as np
 # Plots
 import matplotlib
-#%matplotlib qt
+## Change matplotlib backend to Qt
+%matplotlib qt
+# "%" specifies magic commands in ipython
 import matplotlib.pyplot as plt
 
 #%% Import custom utils
@@ -27,13 +29,13 @@ sys.path.insert(0, '..')
 import utils
 importlib.reload(utils) # Reload If modified during runtime
 
-################################################################################
+#%%#############################################################################
 # Load full accuracy dictionary extracted w/ ResNet50-MiTv1
 ################################################################################
+# Data to be loaded is obtained after MIF extraction (optionaly, after resize&crop)
 # %% Define paths
 path_prefix = Path('..')
-# AB: Obtained in which step? (adds to understandability)
-dict_path = path_prefix / 'saved/full/accuracies_per_category_full_mitv1.pkl'
+dict_path = path_prefix / 'temp/full/accuracies_per_category_full_mitv1_fps-raw.pkl'
 # Load from file
 f = open(dict_path, 'rb')
 accuracies_per_category = pickle.load(f)
@@ -45,18 +47,11 @@ accuracies_per_category = pickle.load(f)
 ################################################################################
 #%% Define example file
 # category and file names
-c_name = 'chopping' # because it's loadead in repo (AB: GitHub repo?)
+c_name = 'chopping'
 f_name =  'flickr-3-4-6-3-2-0-0-3-2534632003_11.mp4'
 
-# AB: I understand the code in that way, that one would have to adjsut the c_name/f_name
-# if one wnated a figure displayed a different action?
-# Back then you provided me some ~ 20 figures, I guess all made individualyl with this scirpt?
-
-# This could be speciefied a bit more here to be more clear, plese
-
 # Load categories from txt file
-# AB: change path if necessary
-l_categories = utils.load_categories('../labels/category_momentsv1.txt')
+l_categories = utils.load_categories('../models/labels/category_momentsv1.txt')
 
 # Get index of the category from l_categories (from 0 to 338)
 c_idx = [i for i in range(len(l_categories)) if l_categories[i] == c_name][0]
@@ -64,7 +59,6 @@ c_idx = [i for i in range(len(l_categories)) if l_categories[i] == c_name][0]
 #%%#############################################################################
 # Extract TopN category-accuracy pairs (clean)
 ################################################################################
-# AB: more info considering the utils (also in readme / doc would help to understand this step)
 labels, topN_ = utils.topN_per_file(accuracies_per_category,
                                     l_categories=l_categories,
                                     N=5,
@@ -119,7 +113,7 @@ labels, topN_, best, worst = utils.topN_per_file(accuracies_per_category, N=5,
 ################################################################################
 #%% Plot with best and worst
 # Load video file using decord
-path_2_file = path_prefix / f'data/MIT_sampleVideos_RAW/{c_name}/{f_name}'
+path_2_file = path_prefix / f'input_data/MIT_sampleVideos_RAW/{c_name}/{f_name}'
 vr = VideoReader(str(path_2_file))
 
 # Extract best and worst frames by their label

@@ -9,10 +9,10 @@ import os
 from pathlib import Path
 
 #%% Define input paths
-path_gifs = Path('data/TRIMMING/INPUT/MIT_GIFs_25FPS_480x360p_1.0s_TOP-3-PER-CAT_old+new')
-path_pngs = Path('data/TRIMMING/INPUT/MIT_MIFs_480x360p_png_old+new')
-path_mp4s = Path('data/TRIMMING/INPUT/08_MIT_sampleVideos_25FPS_480x360p_old+new')
-path_output = Path('data/TRIMMING/')
+path_gifs = Path('input_data/TRIMMING/INPUT/MIT_GIFs_25FPS_480x360p_1.0s_TOP-3-PER-CAT_old+new')
+path_pngs = Path('input_data/TRIMMING/INPUT/MIT_MIFs_480x360p_png_old+new')
+path_mp4s = Path('input_data/TRIMMING/INPUT/08_MIT_sampleVideos_25FPS_480x360p_old+new')
+path_output = Path('input_data/TRIMMING/')
 
 #%% Define task
 # Having final GIFs in path_gifs, sweep through categories -> fnames

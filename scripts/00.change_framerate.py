@@ -17,12 +17,13 @@ import subprocess
 ################################################################################
 #%% Paths
 # AB: adjust paths (location to RAW video files + ourput dir)
-path_input = Path('../data/MIT_sampleVideos_RAW').absolute()
-#path_output = Path('data/MIT_sampleVideos_RAW_25FPS').absolute()
-path_output = Path('../data/TEST_FPS').absolute()
+path_input = Path('../input_data/MIT_sampleVideos_RAW').absolute()
+#path_output = Path('input_data/MIT_sampleVideos_RAW_25FPS').absolute()
+path_output = Path('../input_data/TEST_FPS').absolute()
 
 # Check if output path exists, if not, make one
 if not os.path.exists(path_output):
+  print(f'Ouptput path not found. Creating one at {str(path_output.absolute())}')
   os.makedirs(path_output)
 
 #%% Sweep through files in subfolders of path_input to collect fnames

@@ -18,19 +18,21 @@ from scipy.spatial.distance import squareform
 import seaborn as sns
 import matplotlib
 import matplotlib.pyplot as plt
-%matplotlib qt # AB: Please comment on here, as this was creating some problems while running the code as far as I can remember
 
-#%% Import custom utils
+# Set matplotlib's backend: qt : for Qt creating a separate window for each plot
+# Otherwise set it to inline: '%matplotlib inline'
+%matplotlib inline
+
+#%% Import custom utility functions
 import sys, importlib
 sys.path.insert(0, '..')
-# AB: First use of utilis. What is in there, What needed for?
 import utils
 importlib.reload(utils) # Reload If modified during runtime
 
 # %% Load full accuracy dictionary extracted w/ ResNet50-MiTv1
 # AB: extracted with '01.mif_extraction_exploratory.ipynb' or '01.mif_extraction_short.ipynb'
-path_prefix = Path().parent.absolute()
-dict_path = Path('../saved/full/accuracies_per_category_full_mitv1.pkl')
+path_prefix = Path('..').absolute()
+dict_path = path_prefix / 'temp/accuracies_per_category_mitv1_fps-25.pkl'
 # Load from file
 f = open(dict_path, 'rb')
 accuracies_per_category = pickle.load(f)
@@ -39,8 +41,8 @@ accuracies_per_category = pickle.load(f)
 # Compute softmax feature vectors
 ################################################################################
 # Load categories from txt file
-# AB: Where did we get these from initially? (source)
-l_categories = utils.load_categories(Path('../labels/category_momentsv1.txt'))
+# Source: http://moments.csail.mit.edu/moments_models/category_momentsv1.txt
+l_categories = utils.load_categories(path_prefix / 'models/labels/category_momentsv1.txt')
 
 features_softmax, l_labels = utils.extract_features(l_categories=l_categories,
                                               softmax_dict=accuracies_per_category)
@@ -49,14 +51,14 @@ df_features = pd.DataFrame(data=features_softmax,
                            columns=l_categories, index=l_labels)
 print(df_features[:5])
 
-#%% Save to DataFrame to csv
+#%% Save to DataFrame to csv for external use
 df_features.to_csv(Path('../outputs/RN50_features_softmax_average_nammed.csv'))
-# AB: Why necessarsy / helpful?
 
 #%%#############################################################################
 #  RDM computation
 ################################################################################
-metric = 'cosine' #'euclidean' # AB: Any other possible? (why cosine used insted of others, etc.)
+# Metric to compute dissimilarity matrix: cosine, euclidean, correlation, ...
+metric = 'cosine' # cosine of the angle between two feature vectors
 rdm_original = squareform(pdist(df_features, metric=metric))
 print(rdm_original.shape)
 

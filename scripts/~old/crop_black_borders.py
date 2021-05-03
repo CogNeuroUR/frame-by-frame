@@ -27,7 +27,9 @@ from sklearn.cluster import AgglomerativeClustering
 # Plots
 import seaborn as sns
 import matplotlib
-#%matplotlib qt
+## Change matplotlib backend to Qt
+%matplotlib qt
+# "%" specifies magic commands in ipython
 import matplotlib.pyplot as plt
 
 #%% Import custom utils
@@ -41,7 +43,7 @@ importlib.reload(utils) # Reload If modified during runtime
 ################################################################################
 # %% Define paths
 path_prefix = Path().parent.absolute()
-dict_path = path_prefix / 'saved/full/accuracies_per_category_full_mitv1.pkl'
+dict_path = path_prefix / 'temp/full/accuracies_per_category_full_mitv1.pkl'
 # Load from file
 f = open(dict_path, 'rb')
 accuracies_per_category = pickle.load(f)
@@ -89,8 +91,8 @@ print(l_sorted_best[:10])
 #fname = 'yt-vJbPD1EPAgQ_1677.mp4'
 category = 'attacking'
 fname = 'meta-476930_24.mp4'
-in_file = str(Path(f'data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{fname}'))
-out_file = str(Path(f'data/cropping_tests/{category}_{fname}'))
+in_file = str(Path(f'input_data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{fname}'))
+out_file = str(Path(f'input_data/cropping_tests/{category}_{fname}'))
 
 print(subprocess.call(['ffmpeg', '-i', in_file, '-vf', 'cropdetect=24:16:0', out_file]))
 #%%
@@ -158,7 +160,7 @@ def detectCrop(input_fname):#, output_fname):
 
 category = 'assembling'
 fname = 'yt-vJbPD1EPAgQ_1677.mp4'
-in_file = str(Path(f'data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{fname}').absolute())
+in_file = str(Path(f'input_data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{fname}').absolute())
 
 
 detectCropFile(in_file)
@@ -210,8 +212,8 @@ def trim_cv(filename):
 #fname = 'yt-vJbPD1EPAgQ_1677.mp4'
 category = 'attacking'
 fname = 'meta-476930_24.mp4'
-in_file = str(Path(f'data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{fname}'))
-out_file = str(Path(f'data/cropping_tests/{category}_{fname}'))
+in_file = str(Path(f'input_data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{fname}'))
+out_file = str(Path(f'input_data/cropping_tests/{category}_{fname}'))
 
 # Load video
 cap = cv2.VideoCapture(str(in_file))
@@ -254,8 +256,8 @@ else:
 #fname = 'yt-vJbPD1EPAgQ_1677.mp4'
 category = 'attacking'
 fname = 'meta-476930_24.mp4'
-in_file = str(Path(f'data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{fname}'))
-out_file = str(Path(f'data/cropping_tests/{category}_{fname}'))
+in_file = str(Path(f'input_data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{fname}'))
+out_file = str(Path(f'input_data/cropping_tests/{category}_{fname}'))
 
 # Load video
 cap = cv2.VideoCapture(str(in_file))
@@ -317,7 +319,7 @@ for category, file_name, best in l_sorted_best:
   
     
     # Load video file using decord
-    path_2_file = Path(f'data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{file_name}')
+    path_2_file = Path(f'input_data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{file_name}')
     
     # Check if file exists:
     if os.path.exists(path_2_file):
@@ -371,8 +373,8 @@ width = 899
 height = 899
 category = 'bicycling'
 file_name = 'yt-5r5WH6nBey8_235.mp4'
-path_2_file = str(Path(f'data/resizing_tests/width_480/w480_{category}_{file_name}').absolute())
-out_file = str(Path(f'data/resizing_tests/square_cropped/sq_cr_w480_{category}_{file_name}').absolute())
+path_2_file = str(Path(f'input_data/resizing_tests/width_480/w480_{category}_{file_name}').absolute())
+out_file = str(Path(f'input_data/resizing_tests/square_cropped/sq_cr_w480_{category}_{file_name}').absolute())
 
 if os.path.exists(path_2_file):
   subprocess.call(
@@ -396,7 +398,7 @@ for category, file_name, best in subset:
 #%% Start square cropping  
 start = time.time()
 # Parameters: ==============================================
-out_folder = Path(f'data/cropping_tests/comparison/').absolute()
+out_folder = Path(f'input_data/cropping_tests/comparison/').absolute()
 # ==========================================================
 
 i = 0
@@ -405,7 +407,7 @@ for category, file_name, best in subset:
   # Verbose 
   print(f'{i}/{len(subset)}')
 
-  path_2_file = str(Path(f'data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{file_name}').absolute())
+  path_2_file = str(Path(f'input_data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{file_name}').absolute())
   output_file = str(out_folder / f'sqcr_{category}_{file_name}')
   
   if os.path.exists(path_2_file):
@@ -428,7 +430,7 @@ for category, file_name, best in subset:
     print(f'{i}/{len(subset)}')
   
     # Load video file using decord
-    path_2_file = str(Path(f'data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{file_name}').absolute())    
+    path_2_file = str(Path(f'input_data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{file_name}').absolute())    
     # Get width
     if os.path.exists(path_2_file):
         vr = VideoReader(str(path_2_file))
@@ -455,7 +457,7 @@ def crop_center(img,cropx,cropy):
 # %% Save frames
 
 # Parameters: ==============================================
-out_folder = Path(f'data/cropping_tests/comparison/frames/').absolute()
+out_folder = Path(f'input_data/cropping_tests/comparison/frames/').absolute()
 arr_best = np.array(l_best)
 crop = False#True
 # ==========================================================
@@ -466,7 +468,7 @@ for category, file_name, best in subset:
   print(f'{i}/{len(subset)}')
 
   # Load video file using decord
-  path_2_file = str(Path(f'data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{file_name}').absolute())    
+  path_2_file = str(Path(f'input_data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{file_name}').absolute())    
   # Check if file exists:
   if os.path.exists(path_2_file):
     #vr = VideoReader(str(path_2_file))

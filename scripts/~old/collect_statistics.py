@@ -26,7 +26,9 @@ import pandas as pd
 # Plots
 import seaborn as sns
 import matplotlib
-#%matplotlib qt
+## Change matplotlib backend to Qt
+%matplotlib qt
+# "%" specifies magic commands in ipython
 import matplotlib.pyplot as plt
 
 #%% Import custom utils
@@ -40,7 +42,7 @@ importlib.reload(utils) # Reload If modified during runtime
 ################################################################################
 # %% Define paths
 path_prefix = Path().parent.absolute()
-dict_path = path_prefix / 'saved/full/accuracies_per_category_full_mitv1.pkl'
+dict_path = path_prefix / 'temp/full/accuracies_per_category_full_mitv1.pkl'
 # Load from file
 f = open(dict_path, 'rb')
 accuracies_per_category = pickle.load(f)
@@ -82,7 +84,7 @@ print(l_sorted_best[:10])
 # Categories with missing data (less than 3 clips)
 ################################################################################
 # %%
-input_path = Path(f'data/MIT_sampleVideos_RAW_WORK_IN_PROGRESS/')
+input_path = Path(f'input_data/MIT_sampleVideos_RAW_WORK_IN_PROGRESS/')
 l_files = list(input_path.rglob("*.mp4"))
 l_files = sorted(l_files)
 
@@ -92,8 +94,8 @@ for file in l_files[:10]:
 
 #%%
 l_categories = sorted(utils.load_categories())
-#data_path = Path('data/MIT_sampleVideos_RAW_WORK_IN_PROGRESS/')
-data_path = Path('data/GIFs/MIT_GIFs_25FPS_480x360p_1.0s_TOP-3-PER-CAT')
+#data_path = Path('input_data/MIT_sampleVideos_RAW_WORK_IN_PROGRESS/')
+data_path = Path('input_data/GIFs/MIT_GIFs_25FPS_480x360p_1.0s_TOP-3-PER-CAT')
 N = len(l_categories)
 
 i = 0

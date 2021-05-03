@@ -32,7 +32,7 @@ importlib.reload(utils) # Reload If modified during runtime
 ################################################################################
 #%% Define input paths
 # change path if necessary
-path_files = Path('../data/MIT_sampleVideos_RAW_final_25FPS/')
+path_files = Path('../input_data/MIT_sampleVideos_RAW_final_25FPS/')
 
 #%% Sweep through input gifs set
 extension = 'mp4' # a change of format would be possible here (?)

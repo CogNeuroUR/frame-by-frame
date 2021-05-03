@@ -27,7 +27,9 @@ from sklearn.cluster import AgglomerativeClustering
 # Plots
 import seaborn as sns
 import matplotlib
-#%matplotlib qt
+## Change matplotlib backend to Qt
+%matplotlib qt
+# "%" specifies magic commands in ipython
 import matplotlib.pyplot as plt
 
 #%% Import custom utils
@@ -41,7 +43,7 @@ importlib.reload(utils) # Reload If modified during runtime
 ################################################################################
 # %% Define paths
 path_prefix = Path().parent.absolute()
-dict_path = path_prefix / 'saved/full/accuracies_per_category_full_mitv1.pkl'
+dict_path = path_prefix / 'temp/full/accuracies_per_category_full_mitv1.pkl'
 # Load from file
 f = open(dict_path, 'rb')
 accuracies_per_category = pickle.load(f)
@@ -56,7 +58,7 @@ l_categories = utils.load_categories()
 l_best = []
 N = len(l_categories)
 i = 0
-path_to_dataset = path_prefix / 'data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/'
+path_to_dataset = path_prefix / 'input_data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/'
 
 # Sweep through dictionary and extract best frame idxs
 for category in l_categories[:N]:
@@ -92,8 +94,8 @@ else:
 width = 960
 category = 'bicycling'
 file_name = 'yt-5r5WH6nBey8_235.mp4'
-path_2_file = str(Path(f'data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{file_name}').absolute())
-out_file = str(Path(f'data/resizing_tests/w{width}_{category}_{file_name}').absolute())
+path_2_file = str(Path(f'input_data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{file_name}').absolute())
+out_file = str(Path(f'input_data/resizing_tests/w{width}_{category}_{file_name}').absolute())
 
 subprocess.call(
     ['ffmpeg', '-i', path_2_file,  '-vf', f'scale={width}:-2', out_file])
@@ -113,7 +115,7 @@ for category, file_name, best in subset:
 #%% Copy the subset for comparison
 import shutil
 i=0
-out_folder = Path(f'data/resizing_tests/subset/').absolute()
+out_folder = Path(f'input_data/resizing_tests/subset/').absolute()
 # Check if exist, if not, make one
 os.makedirs(out_folder, exist_ok=True)
 for category, file_name, best in subset:
@@ -121,7 +123,7 @@ for category, file_name, best in subset:
     print(f'{i}/{len(subset)}')
   
     # Load video file using decord
-    path_2_file = str(Path(f'data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{file_name}').absolute())    
+    path_2_file = str(Path(f'input_data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{file_name}').absolute())    
     # Get width
     if os.path.exists(path_2_file):
         vr = VideoReader(str(path_2_file))
@@ -141,7 +143,7 @@ l_fps = []
 T = 0.5 # time duration of the wanted segments (in seconds)
 width = 960
 
-out_folder = Path(f'data/resizing_tests/GIFs_original/').absolute()
+out_folder = Path(f'input_data/resizing_tests/GIFs_original/').absolute()
 # Check if exist, if not, make one
 os.makedirs(out_folder, exist_ok=True)
 
@@ -152,7 +154,7 @@ for category, file_name, best in subset:
     print(f'{i}/{len(subset)}')
     i+=1
     best = int(best)
-    path_2_file = str(Path(f'data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{file_name}').absolute())
+    path_2_file = str(Path(f'input_data/MIT_sampleVideos_RAW_DOWNSIZING_IN_PROGRESS/{category}/{file_name}').absolute())
     output_file = str(out_folder / f'w{width}_{category}_{file_name}')
     # Load file
     vr = VideoReader(str(path_2_file))
@@ -218,13 +220,13 @@ start = time.time()
 width = 960 #mean_width
 to_landscape = True # i.e. to 4x3
 if to_landscape:
-    out_folder = Path(f'data/resizing_tests/GIFs_4x3/').absolute()
+    out_folder = Path(f'input_data/resizing_tests/GIFs_4x3/').absolute()
 else:
-    out_folder = Path(f'data/resizing_tests/GIFs_1x1/').absolute()
+    out_folder = Path(f'input_data/resizing_tests/GIFs_1x1/').absolute()
 # Check if exist, if not, make one
 os.makedirs(out_folder, exist_ok=True)
 # ==========================================================
-input_path = Path(f'data/resizing_tests/GIFs_original/').absolute()
+input_path = Path(f'input_data/resizing_tests/GIFs_original/').absolute()
 _, _, files_subset = next(os.walk(input_path))
 
 i = 0

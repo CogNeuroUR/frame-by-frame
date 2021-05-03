@@ -23,11 +23,11 @@ importlib.reload(utils) # Reload If modified during runtime
 ################################################################################
 # %% Define paths
 path_prefix = Path().parent.absolute()
-dict1_path = path_prefix / 'saved/full/accuracies_per_category_m50.pkl'
-dict2_path = path_prefix / 'saved/full/accuracies_per_category_from50.pkl'
-dict3_path = path_prefix / 'saved/full/accuracies_per_category_from100_250.pkl'
-dict4_path = path_prefix / 'saved/full/accuracies_per_category_from250_.pkl'
-dict5_path = path_prefix / 'saved/full/accuracies_per_category_missing.pkl'
+dict1_path = path_prefix / 'temp/full/accuracies_per_category_m50.pkl'
+dict2_path = path_prefix / 'temp/full/accuracies_per_category_from50.pkl'
+dict3_path = path_prefix / 'temp/full/accuracies_per_category_from100_250.pkl'
+dict4_path = path_prefix / 'temp/full/accuracies_per_category_from250_.pkl'
+dict5_path = path_prefix / 'temp/full/accuracies_per_category_missing.pkl'
 
 # Load from file
 f1 = open(dict1_path, 'rb')
@@ -62,7 +62,7 @@ for category in l_categories:
     #print(len(list(accuracies_per_category.keys())))
 
 #%% Save back a full dictionary file:
-dict_path = path_prefix / 'saved/full/accuracies_per_category_full_mitv1.pkl'
+dict_path = path_prefix / 'temp/full/accuracies_per_category_full_mitv1.pkl'
 f = open(dict_path, 'wb')
 pickle.dump(accuracies_per_category, f)
 f.close()

@@ -8,7 +8,8 @@
 from __future__ import print_function
 # Decord related
 import decord # AB: VSC marks some import commands as problematic ("Unable to import 'decord'pylint(import-error)")
-decord.bridge.set_bridge('native') # AB: What is this command for?
+# Set decord output type to native, i.e. numpy.ndarray
+decord.bridge.set_bridge('native')  # Alternatives: mxnet, torch and tensorflow
 from decord import VideoReader
 # Path and sys related
 import os
@@ -19,78 +20,30 @@ import pandas as pd
 import time, os
 
 #%% Import custom utils
-# AB: What is needed here from utilis (make these a bt more transparent would help)
 import sys, importlib
 sys.path.insert(0, '..')
 import utils
 importlib.reload(utils) # Reload If modified during runtime
 
-#%% Load MIF csv
-# AB: e.g. created via script '03.softmax_to_mif-idx.py' (?)
-path_mifs = Path('../data/MIT_additionalVideos_25FPS_480x360p/mifs.csv')
+#%% Load MIF csv created during the MIF extraction step, i.e. 01.mif_extraction*.ipynb
+path_mifs = Path('../input_data/MIT_additionalVideos_25FPS_480x360p/mifs.csv')
 mifs = pd.read_csv(path_mifs, usecols=['category', 'fname', 'mif_idx'])
 print(mifs)
-
-#%% Define GIF extraction function
-# AB: some words to moviepy maybe (what is it? / why used?)
-from moviepy.editor import ImageSequenceClip
-from moviepy.video.fx import blackwhite
-
-def gif(filename, array, fps, rewrite=False, bw=False):
-  """
-  Writes GIFs, given array of frames, using moviepy functionality
-  
-  Parameters
-  ----------
-  filename : str or pathlib.Path
-    Path to output GIF file
-  array : numpy.ndarray
-    Frames array (n_frames, height, width, n_channels)
-  fps : int
-    Output FPS
-  rewrite : bool
-    True if to rewrite output file (Default: False)
-  bw : bool
-    True if Black&White (Default: False)
-    
-  Returns
-  -------
-  None
-  """
-  
-    # Check if files already exists:
-  if os.path.exists(filename):
-    if rewrite == True:
-      pass
-    else:
-      raise Exception('File already exists. Exiting...')
-  
-  # copy into the color dimension if the images are black and white
-  if array.ndim == 3:
-      array = array[..., np.newaxis] * np.ones(3)
-
-  # make the moviepy clip
-  clip = ImageSequenceClip(list(array), fps=fps)
-  if bw == True:
-      clip = blackwhite.blackwhite(clip)
-  clip.write_gif(filename, fps=fps, program='ffmpeg', verbose=False)
 
 #%% ############################################################################
 # Test on a single video
 ################################################################################
-
 # AB: Same as in '05.classification_visualization.py':
 # a bit more clear that this is an example run
 
 # Parameters
 category = 'arresting'
 file_name = 'yt-aAVfUYxx12g_18.mp4'
-path_2_file = Path(f'../data/single_video_25FPS_480x360p/{category}/{file_name}')
+path_2_file = Path(f'../input_data/single_video_25FPS_480x360p/{category}/{file_name}')
 # AB: change path if necessary
 
 T = 1 # in seconds
-path_output = Path('../data/single_video_25FPS_480x360p_1s/').absolute()
-# AB: change path if necessary
+path_output = Path(f'../input_data/GIFs/single_video_25FPS_480x360p_1.0s/{category}').absolute()
 utils.check_mkdir(path_output)
 
 #===============================================================================
@@ -138,13 +91,11 @@ end_path = path_output / f'{file_name[:-4]}_e.gif'
 # Save arrays to gifs:
         # IF "best-in-the-middle" exists, save it, otherwise, go to "...-begin", ...
 if frames_begin is not None:
-        gif(start_path, frames_begin, int(fps), rewrite=True)
+        utils.gif(start_path, frames_begin, int(fps), rewrite=True)
 if frames_mid is not None:
-        gif(mid_path, frames_mid, int(fps), rewrite=True)
+        utils.gif(mid_path, frames_mid, int(fps), rewrite=True)
 if frames_end is not None:
-        gif(end_path, frames_end, int(fps), rewrite=True)
-
-
+        utils.gif(end_path, frames_end, int(fps), rewrite=True)
 
 #%% ############################################################################
 # Extract GIFs from list of videos
@@ -159,8 +110,8 @@ start = time.time()
 T = 1.0 # time duration of the wanted segments (in seconds)
 # This is an important parameter
 # AB:  Change these if necessary
-path_output = Path(f'data/GIFs/MIT_additionalGIFs_25FPS_480x360p_{T}s/').absolute()
-path_2_dataset = Path(f'data/MIT_additionalVideos_25FPS_480x360p/')
+path_output = Path(f'input_data/GIFs/MIT_additionalGIFs_25FPS_480x360p_{T}s/').absolute()
+path_2_dataset = Path(f'input_data/MIT_additionalVideos_25FPS_480x360p/{category}/')
 
 utils.check_mkdir(path_output)
 
@@ -221,11 +172,11 @@ for index, row in mifs.iterrows(): # AB: Does this loop iterate e.g. over all ou
     # Save arrays to gifs:
     # IF "best-in-the-middle" exists, save it, otherwise, go to "...-begin", ...
     if frames_begin is not None:
-            gif(start_path, frames_begin, int(fps))
+            utils.gif(start_path, frames_begin, int(fps))
     if frames_mid is not None:
-            gif(mid_path, frames_mid, int(fps))
+            utils.gif(mid_path, frames_mid, int(fps))
     if frames_end is not None:
-            gif(end_path, frames_end, int(fps))
+            utils.gif(end_path, frames_end, int(fps))
   else:
     break
 
@@ -255,8 +206,8 @@ print('Total nr. of GIFs: ', len(l_videos))
 # declare size of subset to test upon
 N = 20
 # change paths if necessary
-path_dataset = Path('data/MIT_sampleVideos_RAW_final_25FPS_480x360p/')
-path_output = Path('data/GIFs/BW_GIFs')
+path_dataset = Path('input_data/MIT_sampleVideos_RAW_final_25FPS_480x360p/')
+path_output = Path('input_data/GIFs/BW_GIFs')
 subset = mifs.sample(n=N, random_state=2)
 
 for index, row in subset.iterrows():
@@ -309,9 +260,9 @@ for index, row in subset.iterrows():
     # Save arrays to gifs:
     # IF "best-in-the-middle" exists, save it, otherwise, go to "...-begin", ...
     if frames_begin.size != 0:
-        gif(start_path, frames_begin, int(fps), bw=True, rewrite=True)
+        utils.start_path, frames_begin, int(fps), bw=True, rewrite=True)
     if frames_mid.size != 0:
-        gif(mid_path, frames_mid, int(fps), bw=True, rewrite=True)
+        utils.gif(mid_path, frames_mid, int(fps), bw=True, rewrite=True)
     if frames_end.size != 0:
-        gif(end_path, frames_end, int(fps), bw=True, rewrite=True)
+        utils.gif(end_path, frames_end, int(fps), bw=True, rewrite=True)
 # %%

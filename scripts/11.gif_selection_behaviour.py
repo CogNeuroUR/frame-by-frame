@@ -10,7 +10,7 @@ import time
 
 #%% Define input paths
 # change paths if necessary
-path_gifs = Path('../data/TRIMMING/INPUT/MIT_GIFs_25FPS_480x360p_1.0s_TOP-3-PER-CAT_old+new')
+path_gifs = Path('../input_data/TRIMMING/INPUT/MIT_GIFs_25FPS_480x360p_1.0s_TOP-3-PER-CAT_old+new')
 
 #%% Sweep through input gifs set
 l_gifs = []

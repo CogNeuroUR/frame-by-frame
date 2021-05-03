@@ -16,7 +16,9 @@ import pandas as pd
 # Plots
 import seaborn as sns
 import matplotlib
-#%matplotlib qt
+## Change matplotlib backend to Qt
+%matplotlib qt
+# "%" specifies magic commands in ipython
 import matplotlib.pyplot as plt
 from PIL import Image
 
@@ -31,7 +33,7 @@ importlib.reload(utils) # Reload If modified during runtime
 ################################################################################
 # %% Define paths
 path_prefix = Path().parent.absolute()
-dict_path = path_prefix / 'saved/full/accuracies_per_category_full_mitv1.pkl'
+dict_path = path_prefix / 'temp/full/accuracies_per_category_full_mitv1.pkl'
 # Load from file
 f = open(dict_path, 'rb')
 accuracies_per_category = pickle.load(f)
@@ -133,14 +135,16 @@ category = 'adult+female+speaking'
 file_name = 'yt-aFk9L3nhS0Q_98.mp4'
 path_to_csv = Path(f'outputs/{category}_scene_stats.csv')
 
-path_2_file = Path(f'data/MIT_sampleVideos_RAW/{category}/{file_name}')
+path_2_file = Path(f'input_data/MIT_sampleVideos_RAW/{category}/{file_name}')
 scenes, l_content_vals = find_scenes(str(path_2_file), 30, verbose=False)
 print('\n')
 print(scenes)
 
 ###############################################################################
 #%% HERE LEFT 07.01
+# Change matplotlib backend to Qt
 %matplotlib qt
+# "%" specifies magic commands in ipython
 from scipy.stats import median_absolute_deviation
 true_vals = np.array(l_content_vals[1:])
 mad = median_absolute_deviation(true_vals)
@@ -341,7 +345,7 @@ def extract_content(video_path, threshold=30.0, min_scene_len=5, verbose=False):
 ############################## HERE LEFT 08.01.21 ###########################
 #%% Tweaking ofthe threshold
 start = time.time()
-path_to_subset = Path('data/scene_cuts_subset/')
+path_to_subset = Path('input_data/scene_cuts_subset/')
 threshold = 6
 l_outlaw = []
 
@@ -375,7 +379,7 @@ for outlaw in l_outlaw:
 category = 'stitching'
 file_name = 'yt-_1Y2p4bSwyA_144.mp4'
 
-path_2_file = Path(f'data/MIT_sampleVideos_RAW/{category}/{file_name}')
+path_2_file = Path(f'input_data/MIT_sampleVideos_RAW/{category}/{file_name}')
 
 if len(find_scenes(str(path_2_file), 40)) > 1:
     print('\n\nVideo DOES contain scene cuts!')
@@ -397,7 +401,7 @@ for category, file_name, best in l_best[:10]:
         print(f'\n{i}/{len(l_best)}')
     i+=1
     # Load video file using decord
-    path_2_file = Path(f'data/MIT_sampleVideos_RAW/{category}/{file_name}')
+    path_2_file = Path(f'input_data/MIT_sampleVideos_RAW/{category}/{file_name}')
     # Check
     if len(find_scenes(str(path_2_file), 40)) > 1:
         l_outlaw.append([category, file_name])
@@ -432,10 +436,10 @@ np.savetxt('outputs/video_subset.csv',subset,
 #%% Copy the subset to a new directory
 import shutil
 
-path_to_subset = Path('data/scene_cuts_subset/')
+path_to_subset = Path('input_data/scene_cuts_subset/')
 
 for category, file_name, best in subset:
-  path_to_input = Path(f'data/MIT_sampleVideos_RAW/{category}/{file_name}')
+  path_to_input = Path(f'input_data/MIT_sampleVideos_RAW/{category}/{file_name}')
   path_out = path_to_subset / str(category + '__' + file_name)
   
   shutil.copyfile(src = path_to_input,
@@ -444,7 +448,7 @@ for category, file_name, best in subset:
 
 #%% Tweaking ofthe threshold
 start = time.time()
-path_to_subset = Path('data/scene_cuts_subset/')
+path_to_subset = Path('input_data/scene_cuts_subset/')
 
 threshold = 34
 min_scene_len = 10
@@ -504,7 +508,7 @@ for category, file_name, best in l_best[:30]:
         print(f'\n{i}/{len(l_best)}')
     i+=1
     # Load video file using decord
-    path_2_file = Path(f'data/MIT_sampleVideos_RAW/{category}/{file_name}')
+    path_2_file = Path(f'input_data/MIT_sampleVideos_RAW/{category}/{file_name}')
     # Check
     if len(find_scenes(str(path_2_file), 40)) > 1:
         l_outlaw.append([category, file_name])
@@ -561,7 +565,7 @@ for category, file_name, best in l_best[:500]:
             print(f'{i}/{len(l_best)}')
         i+=1
         # Load video file using decord
-        path_2_file = Path(f'data/MIT_sampleVideos_RAW/{category}/{file_name}')
+        path_2_file = Path(f'input_data/MIT_sampleVideos_RAW/{category}/{file_name}')
         vr = VideoReader(str(path_2_file))
         
         # Get FPS

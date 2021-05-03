@@ -114,7 +114,7 @@ def topN_per_file(accuracies_dict, l_categories,
   
   # Reshape to (n_frames, n_labels)
   ass = per_frame_accuracies.reshape((per_frame_accuracies.shape[0],
-                                      len(list(accuracies_dict.keys()))))
+                                      len(l_categories)))
   # Extract values only from TRUE label: (n_frames, 1)
   ass = ass[:, cat_idx]
 
@@ -208,7 +208,7 @@ def best_worst(accuracies_dict, l_categories,
   per_frame_accuracies = np.array(accuracies_dict[category_name][video_fname])
 
   ass = per_frame_accuracies.reshape((per_frame_accuracies.shape[0],
-                                          len(list(accuracies_dict.keys()))))
+                                          len(l_categories)))
   ass = ass[:, cat_idx]
   if verbose:
       print(f'\t{video_fname} : Max/Min accuracy at frame:' \
@@ -263,6 +263,9 @@ def extract_features(l_categories, softmax_dict):
   for category in l_categories:
     
     # Extract filenames per category
+    if category not in softmax_dict:
+      continue
+
     l_files = list(softmax_dict[category].keys())
     
     if not l_files: # Check if any files present in current category
@@ -301,36 +304,12 @@ def extract_features(l_categories, softmax_dict):
   print(f'{len(l_avg_softvectors)} categories swept!')
 
   return features_softmax, l_labels
-
-################################################################################
-# Dendrogram plotting (scikit-learn.org)
-################################################################################
-def plot_dendrogram(model, **kwargs):
-    # Create linkage matrix and then plot the dendrogram
-
-    # create the counts of samples under each node
-    counts = np.zeros(model.children_.shape[0])
-    n_samples = len(model.labels_)
-    for i, merge in enumerate(model.children_):
-        current_count = 0
-        for child_idx in merge:
-            if child_idx < n_samples:
-                current_count += 1  # leaf node
-            else:
-                current_count += counts[child_idx - n_samples]
-        counts[i] = current_count
-
-    linkage_matrix = np.column_stack([model.children_, model.distances_,
-                                      counts]).astype(float)
-
-    # Plot the corresponding dendrogram
-    dendrogram(linkage_matrix, **kwargs)
     
+
 ################################################################################
 # GIF writting using moviepy
 ################################################################################
-
-def gif(filename, array, fps=10, scale=1.0, scale_width=None):
+def gif(filename, array, fps=10, scale=1.0, scale_width=None, rewrite=False):
     """Creates a gif given a stack of images using moviepy
     Notes
     -----
@@ -344,18 +323,32 @@ def gif(filename, array, fps=10, scale=1.0, scale_width=None):
     ----------
     filename : string
         The filename of the gif to write to
-    array : array_like
-        A numpy array that contains a sequence of images
+    array : numpy.ndarray
+        Array with sequence of images
     fps : int
         frames per second (default: 10)
     scale : float
         how much to rescale each image by (default: 1.0)
+    scale_width : int
+      Scalling factor (default: None)
+    
+    Returns
+    -------
+    clip : moviepy.video.VideoClip.VideoClip
+      Video clip from given sequence of frames
     """
 
     # ensure that the file has the .gif extension
     fname, _ = os.path.splitext(filename)
     filename = fname + '.gif'
 
+    # Check if files already exists:
+    if os.path.exists(filename):
+      if rewrite == True:
+        pass
+      else:
+        raise Exception('File already exists. Exiting...')
+    
     # copy into the color dimension if the images are black and white
     if array.ndim == 3:
         array = array[..., np.newaxis] * np.ones(3)
@@ -368,15 +361,16 @@ def gif(filename, array, fps=10, scale=1.0, scale_width=None):
     else:
         clip = ImageSequenceClip(list(array), fps=fps)
     #clip.write_gif(filename, fps=fps, program='ffmpeg') #, program='ffmpeg') # or 'ImageMagick'
-    clip.write_gif(filename, fps=fps, progress_bar=False)
+    clip.write_gif(filename, fps=fps)
     return clip
+
 
 #%% ############################################################################
 # Three-frame differencing for motion detection
 ################################################################################
 def outlaw_search(frames_array, threshold_value=25e6):
     """
-    Function to search for "drastic" changes in a video segment based on "Frame
+    Search for "drastic" changes in a video segment based on "Frame
     Differencing. The outlaw criterion is based on the maximum value of the gradient of the
     frame-to-frame differences.
     
@@ -386,10 +380,17 @@ def outlaw_search(frames_array, threshold_value=25e6):
         Array containing the frames of the video.
     threshold_value : int (optional)
         Value above which the video segment is subjected to exclusion.
+
+    Returns
+    -------
+    True if criterion met, otherwise False.
     """
-    # Compute three-frame differencing along the frames
+
+    # Empty lists for collecting per-frame differences and their sum
     l_diffs_sum = []
     l_diffs = []
+
+    # Compute two-frame differencing along the frames
     for j in range(len(frames_array)):
         if j > 0:
             frame1 = frames_array[j-1]
@@ -397,7 +398,9 @@ def outlaw_search(frames_array, threshold_value=25e6):
             diffs = cv2.absdiff(frame1, frame2)
             l_diffs_sum.append(np.sum(diffs))
             l_diffs.append(diffs)
+
     # Check if differences are bigger than threshold
+    # i.e. take the maximum value from the gradient of summed differences
     if np.absolute(np.gradient(l_diffs_sum)).max() > threshold_value:
         return True
     else:
@@ -407,49 +410,77 @@ def outlaw_search(frames_array, threshold_value=25e6):
 # Distance matrix computation (required for sklearn's AggClust)
 ################################################################################
 def get_distances(X,model,mode='l2'):
-    distances = []
-    weights = []
-    children=model.children_
-    dims = (X.shape[1],1)
-    distCache = {}
-    weightCache = {}
-    for childs in children:
-        c1 = X[childs[0]].reshape(dims)
-        c2 = X[childs[1]].reshape(dims)
-        c1Dist = 0
-        c1W = 1
-        c2Dist = 0
-        c2W = 1
-        if childs[0] in distCache.keys():
-            c1Dist = distCache[childs[0]]
-            c1W = weightCache[childs[0]]
-        if childs[1] in distCache.keys():
-            c2Dist = distCache[childs[1]]
-            c2W = weightCache[childs[1]]
-        d = np.linalg.norm(c1-c2)
-        cc = ((c1W*c1)+(c2W*c2))/(c1W+c2W)
+  """
+  Computes weights and distances to be passed to sklearn's dendrogram()
 
-        X = np.vstack((X,cc.T))
+  Parameters
+  ----------
+  X : numpy.ndarray
+    Features/Representational dissimilarity matrix
+  model : sklearn.cluster.AgglomerativeClustering
+    Fitted clustering model
+  mode : str
+    How to deal with a higher level cluster merge with lower distance.
+    (Default: 'l2')
 
-        newChild_id = X.shape[0]-1
+  From https://stackoverflow.com/questions/26851553/sklearn-agglomerative-clustering-linkage-matrix/47769506#47769506
+  """
 
-        # How to deal with a higher level cluster merge with lower distance:
-        if mode=='l2':  # Increase the higher level cluster size suing an l2 norm
-            added_dist = (c1Dist**2+c2Dist**2)**0.5 
-            dNew = (d**2 + added_dist**2)**0.5
-        elif mode == 'max':  # If the previrous clusters had higher distance, use that one
-            dNew = max(d,c1Dist,c2Dist)
-        elif mode == 'actual':  # Plot the actual distance.
-            dNew = d
+  # Empty distance and weight lists
+  distances = []
+  weights = []
 
+  # Get children of each non-leaf node from model
+  children=model.children_
+  
+  # Dimensions to reshape 
+  dims = (X.shape[1],1)
 
-        wNew = (c1W + c2W)
-        distCache[newChild_id] = dNew
-        weightCache[newChild_id] = wNew
+  # Temporary dicts
+  distCache = {}
+  weightCache = {}
 
-        distances.append(dNew)
-        weights.append( wNew)
-    return distances, weights
+  # Iterate over children
+  for childs in children:
+    # Reshape samples
+    c1 = X[childs[0]].reshape(dims)
+    c2 = X[childs[1]].reshape(dims)
+    
+    # Initiate distances & weights
+    c1Dist = 0
+    c1W = 1
+    c2Dist = 0
+    c2W = 1
+    
+    if childs[0] in distCache.keys():
+      c1Dist = distCache[childs[0]]
+      c1W = weightCache[childs[0]]
+    if childs[1] in distCache.keys():
+      c2Dist = distCache[childs[1]]
+      c2W = weightCache[childs[1]]
+    d = np.linalg.norm(c1-c2)
+    cc = ((c1W*c1)+(c2W*c2))/(c1W+c2W)
+
+    X = np.vstack((X,cc.T))
+
+    newChild_id = X.shape[0]-1
+
+    # How to deal with a higher level cluster merge with lower distance:
+    if mode=='l2':  # Increase the higher level cluster size suing an l2 norm
+      added_dist = (c1Dist**2+c2Dist**2)**0.5 
+      dNew = (d**2 + added_dist**2)**0.5
+    elif mode == 'max':  # If the previrous clusters had higher distance, use that one
+      dNew = max(d,c1Dist,c2Dist)
+    elif mode == 'actual':  # Plot the actual distance.
+      dNew = d
+
+    wNew = (c1W + c2W)
+    distCache[newChild_id] = dNew
+    weightCache[newChild_id] = wNew
+
+    distances.append(dNew)
+    weights.append(wNew)
+  return distances, weights
 
 ################################################################################
 # Check for path 

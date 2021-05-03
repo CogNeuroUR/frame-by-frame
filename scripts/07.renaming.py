@@ -16,9 +16,9 @@ import glob
 
 #%% Define input paths
 # AB: Adjust these if neessary to personal location
-path_gifs = Path('../data/TRIMMING/INPUT/MIT_GIFs_25FPS_480x360p_1.0s_TOP-3-PER-CAT_old+new')
-path_pngs = Path('../data/TRIMMING/PNGs')
-path_mp4s = Path('../data/TRIMMING/MP4s')
+path_gifs = Path('../input_data/TRIMMING/INPUT/MIT_GIFs_25FPS_480x360p_1.0s_TOP-3-PER-CAT_old+new')
+path_pngs = Path('../input_data/TRIMMING/PNGs')
+path_mp4s = Path('../input_data/TRIMMING/MP4s')
 
 #%% Sweep through input gifs set
 l_mp4s = []
@@ -83,7 +83,7 @@ print(df_lookup['renamed'][x])
 
 
 #%% Save as csv
-df_lookup.to_csv('data/RENAMING/lookup_table.csv')
+df_lookup.to_csv('input_data/RENAMING/lookup_table.csv')
 
 #%%#############################################################################
 # Renaming
@@ -196,7 +196,7 @@ def rename_lookup(opt, df_lookup):
 # Here the real renaming happens initiated above
 # Path to output
 # adjustpath if necessary
-path_output = Path('data/RENAMING/')
+path_output = Path('input_data/RENAMING/')
 
 # Parameter dictionary for rename_lookup() function
 opt = {
@@ -221,7 +221,7 @@ print(f'\nTime elapsed: {duration:.2f}s (~ {duration/len(df_lookup):.2f}s per fi
 # %% Tests
 # AB: Please elaborate, what exactly is tested here (only PNGs?)
 # adjust if necessary
-path_output = Path('../data/RENAMING/')
+path_output = Path('../input_data/RENAMING/')
 
 opt = {
   'input_mp4s' : path_mp4s,
