@@ -1,13 +1,15 @@
 # MIT-Pipeline
-[OV; AB]
+[OV; AB
 
 ## Prerequirements / Initial Info
 
 + **[`utils.py`](utils.py)** - Utility functions used in scripts along the pipeline.
-+ **Timing** - **TODO**: @ OV
-How long was the overall running time?
-What was the most time consuming step?
-(how long?)
+
+> **Timing** \
+most time consuming step: mif_extraction_short
+i5-7400 CPU @ 3.00GHz; 16GB RAM; No CUDA: >15h
+Google Colab + GPU (CUDA) acceleration: 3-5h
+
 + **platform independence**: tested under independently on CoLab, Mac and Linux = OK
 + **paths** are relative (clone GitHub repo and place necessary video files in ./input_data)
 
