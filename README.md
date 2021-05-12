@@ -3,8 +3,8 @@
 
 ## Prerequirements / Initial Info
 
-+ **platform independence**: tested under independently on CoLab, Mac and Linux = OK
-+ **paths** are relative (clone GitHub repo and place necessary video files in ./input_data)
++ **platform independence**: tested independently on CoLab, Mac and Linux = OK
++ **paths** are relative (clone GitHub repo and place necessary video files in `input_data/`)
 + **[`utils.py`](utils.py)** - Utility functions used in scripts along the pipeline.
 + **Timing**:
 > + most time consuming step: mif_extraction_short
@@ -16,7 +16,7 @@
 + **./input_data**
 Input Data (Video Files from MiT-v1, etc.)
 + **./models**
-Folder containing labels and weights of the pretrained ResNet-50 (MiT-v1) neural network model, as well as representations of this/these model(s), e.g. RDM, feature maps, etc.
+Folder containing labels and weights of the pre-trained ResNet-50 (MiT-v1) neural network model, as well as representations of this/these model(s), e.g. RDM, feature maps, etc.
 + **./plots**
 Output-folder, where plots, etc. are saved into during the process
 + **./scripts**
@@ -27,7 +27,7 @@ Temporary data (like .csv, .pkg) for further use during running of the pipeline
 
 ## Steps
 
-![Pipeline Flowchart](/plots/MIT_pipeline_1.1_wBG.png  "Processing Pipeline Steps")
+![Pipeline Flowchart](plots/MIT_pipeline_1.1_wBG.png  "Processing Pipeline Steps")
 
 ### 1. Change Framerate
 `00.change_framerate.py`
@@ -106,14 +106,14 @@ Resizing and cropping of the video data via ffmpeg. Also includes checking the w
 ### 7. ResNet-50 Classification & Visualization
 `05.classification_visualization.py`
 
-Script for investigation of per-frame TopN accuracies extracted using an MiTv1 pretrained ResNet50.
+Script for investigation of per-frame TopN accuracies extracted using an MiTv1 pre-trained ResNet50.
 
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/CogNeuroUR/frame-by-frame/blob/main/video_frame_extractor.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/CogNeuroUR/frame-by-frame/blob/main/scripts/01.mif_extraction_exploratory.ipynb)
 
 ![example image](https://github.com/CogNeuroUR/frame-by-frame/blob/main/plots/best&worst+top5/cutting_yt-UgO4jE-puiE_67.mp4.png?raw=true)
 
 
-* Having a collection of videos with pre-defined "true" categories and a pretrained classifier:
+* Having a collection of videos with pre-defined "true" categories and a pre-trained classifier:
     1. extract each frame of each video;
     2. perform a classification of each individual frame;
     3. extract the **per-frame accuracies** for the true category.
@@ -137,7 +137,7 @@ Three different GIFs were extracted depending on the positioning to the MIF (mos
 * '..._e.GIF' - MIF at the end of the GIF (30 frames ending with GIF)
 
 **Note:** Depending on the input video, sometimes not all the three different GIFs exist, due to the MIF index (and its position in the video).
-(Comment: This was ok for us, as afterwards, there followed a manual selection process by human rators anyhow)
+(Comment: This was ok for us, as afterwards, there followed a manual selection process by human raters anyhow)
 
 ### 9. Rename Files
 `07.renaming.py`
@@ -145,10 +145,10 @@ Three different GIFs were extracted depending on the positioning to the MIF (mos
 Script for renaming MIF, i.e. PNG, and MP4 datasets using the input GIF dataset.
 The script was run for renaming (1) the original MP4s (, (2) the extracted MIF PNGs (see also below.)) and (3) the extracted GIFs (see above)
 
-To have an overall consitent naming scheme, the videos were named as examplars form the category they were from.
+To have an overall consitent naming scheme, the videos were named as exemplars form the category they were from.
 E.g.: 'aiming_1.GIF', 'cutting_2.MP4' (or 'writing_3.PNG')
 
-The conversion from original raw file names to renamed file names follwoing the pattern described above is additionaly stored and archived in a lookup-table.
+The conversion from original raw file names to renamed file names following the pattern described above is additionally stored and archived in a lookup-table.
 
 ### 10. Convert GIF to MP4
 `08.convert_gif_to_mp4.py`
@@ -157,7 +157,7 @@ Script writting GIFs based on MIFs.
 
 **Info:** [SoSciSurvey](https://www.soscisurvey.de/) (2021-04-20), has an upload quota for GIFs which is different than for MP4s (640 kB vs. 64 MB).
 
-As using that platform for later batch human stimuli evaluation, re-transforming of the GIFs to videos was exectuted.
+As using that platform for later batch human stimuli evaluation, re-transforming of the GIFs to videos was executed.
 Note that these videos differ from the original videos (e.g. duration: 1s; pre-selection of MIF positioning in video; etc.)
 
 ### 11. Extract Static Frames
@@ -179,32 +179,17 @@ The final distributions are exported as csv-file for further visualization a./o.
 `11.gif_selection_behaviour.py`
 `11.gif_selection_rators.py`
 
-Extracts distribution of GIFs per MIF position for each participant in the GIF selection task (using Rator distribution specified).
+Extracts distribution of GIFs per MIF position for each participant in the GIF selection task (using Rater distribution specified).
 
-In a step above, up to (!) three different GIFs were generated using the MIF indices. Four different human rators (2021-04-28) selected one of these up to three different possible GIFs.
-To check individual rating behavior (for bias, overall tendencies over rators, etc.), the individual selections are collected, quantified and visualized.
+In a step above, up to (!) three different GIFs were generated using the MIF indices. Four different human raters (2021-04-28) selected one of these up to three different possible GIFs.
+To check individual rating behavior (for bias, overall tendencies over raters, etc.), the individual selections are collected, quantified and visualized.
 
-The first script extracts the distribution of GIFs per MIF position for each participant in the GIF selection task sepcified (= rating).
+The first script extracts the distribution of GIFs per MIF position for each participant in the GIF selection task specified (= rating).
 The second script reads in a input csv (containing individual rating behavior / categories).
-Both parts plot the distribution for manual review. Note that the second is closer to the actual behavior due to the more precise repproduction of actual human rating behavior (thrrough the input csv).
+Both parts plot the distribution for manual review. Note that the second is closer to the actual behavior due to the more precise reproduction of actual human rating behavior (through the input csv).
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- Frame-by-frame classification
-=======================================================
-
+<!--- Frame-by-frame classification
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/CogNeuroUR/frame-by-frame/blob/main/video_frame_extractor.ipynb)
 
 ![example image](https://github.com/CogNeuroUR/frame-by-frame/blob/main/plots/best&worst+top5/cutting_yt-UgO4jE-puiE_67.mp4.png?raw=true)
@@ -222,4 +207,4 @@ Both parts plot the distribution for manual review. Note that the second is clos
         video_frames = vr.get_batch(frame_id_list).asnumpy()
         ```
     * [OpenCV](https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_gui/py_video_display/py_video_display.html) [TODO]
-  -->
+--->

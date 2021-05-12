@@ -19,7 +19,7 @@ import numpy as np
 # Plots
 import matplotlib
 ## Change matplotlib backend to Qt
-%matplotlib qt
+%matplotlib inline
 # "%" specifies magic commands in ipython
 import matplotlib.pyplot as plt
 
@@ -157,4 +157,39 @@ plt.tight_layout()
 #plt.savefig(str(path_prefix / f'plots/best&worst+top5/{c_name}_{f_name}.png'))
 plt.show()
 
-# %%
+#%% Pseudocode for multiple plots
+l_pairs = [[c1, f1], [c2, f2]]
+
+# iterate over pairs
+for c_name, f_name in l_pairs:
+  l_categories = utils.load_categories('../models/labels/category_momentsv1.txt')
+
+  # Get index of the category from l_categories (from 0 to 338)
+  c_idx = [i for i in range(len(l_categories)) if l_categories[i] == c_name][0]
+
+  labels, topN_ = utils.topN_per_file(accuracies_per_category,
+                                    l_categories=l_categories,
+                                    N=5,
+                                    category_name=c_name,
+                                    video_fname=f_name)
+  plt.figure(figsize=(20, 10))
+  ax1 = plt.subplot(212)
+
+  x=np.arange(topN_.shape[1])
+
+  for i in range(topN_.shape[0]):
+      if labels[i] != c_name:
+          ax1.plot(x, topN_[i],
+                  label=labels[i],
+                  alpha=0.35)
+      else:    
+          ax1.plot(x, topN_[i],
+                  label=labels[i],
+                  linewidth=3)
+  ax1.set_xlim(xmin=0, xmax=topN_.shape[1])
+  ax1.set_title(f'Per-frame accuracies for {c_name} : {f_name}')
+  ax1.set_xlabel('Frame nr.')
+  ax1.set_ylabel('Prediction accuracy (softmax)')
+  ax1.legend(title=f'Top-{len(topN_)} categories')
+  plt.tight_layout()
+  plt.show()

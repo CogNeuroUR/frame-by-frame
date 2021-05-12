@@ -11,6 +11,7 @@ from pathlib import Path
 # Data types & numerics
 import numpy as np
 import pandas as pd
+# sklearn (sci-kit learn) package contains utilities & classes for basic ML tasks
 from sklearn.cluster import AgglomerativeClustering
 from scipy.cluster.hierarchy import dendrogram, linkage
 from scipy.spatial.distance import pdist, squareform
