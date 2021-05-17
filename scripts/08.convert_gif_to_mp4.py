@@ -1,5 +1,10 @@
 # [11.02.21] OV
-# Script writting GIFs based on MIFs
+# Script writting GIFs based on MIFs using ffmpeg
+
+#*******************************************************************************
+# Note that for this script, (on macOS) the homebrew installation of ffmpeg & ffprobe
+# was used!
+#*******************************************************************************
 
 # AB: - INFO - 
 # SoSci Survey 8https://www.soscisurvey.de/; 2021-04-20), has an upload quota
@@ -44,6 +49,11 @@ print('Total nr. of GIFs: ', len(l_videos))
 #%% ############################################################################
 # Conversion: GIF -> MP4 using ffmpeg
 ################################################################################
+# ffmpeg is a very fast video and audio converter that can also grab from a live
+# audio/video source.
+# It can also convert between arbitrary sample rates and resize video on the fly
+# with a high quality polyphase filter.
+# (Sourse: https://ffmpeg.org/ffmpeg.html)
 #%% Test on one video
 
 category = 'burying'
@@ -51,20 +61,31 @@ file_name = 'burying_1.gif'
 path_2_file = path_input / category / file_name
 out_file = path_output / (file_name[:-3] + 'mp4')
 
+# ffprobe gathers information from multimedia streams and prints it in human-
+# and machine-readable fashion.
 output = str(subprocess.check_output(
-  ['ffprobe', '-v', 'quiet', '-print_format', 'default', '-show_format', '-show_streams', path_2_file]
+  ['ffprobe', '-v', 'quiet', '-print_format', 'default', '-show_format', '-show_streams', str(path_2_file)]
   , stderr=subprocess.STDOUT)).split('\\n')
-  # AB: Maybe one line elaborating the ffmpeg parameters?
-print(output[9][6:], output[10][7:])
+# -v quiet : set loglevel/verbose to silent
+# -print_format default : set output printing format to default
+#   For more details see: https://ffmpeg.org/ffprobe.html#toc-default
+# -show_format : Show info about the container format of the input multimedia stream.
+# -show_streams : Show info about each media stream contained in the input multimedia stream.
 
+# Print height and width  of the input file
+print(output[9], output[10])
+
+# Execute conversion and see the output (if "0", then succesfull)
 print(subprocess.call(
   ['ffmpeg', '-i', path_2_file,  '-movflags', 'faststart', '-pix_fmt', 'yuv420p', '-y', out_file]
   ))
-  # AB: Maybe one line elaborating the ffmpeg parameters? (if we want to change sth in the future? / link to documentation)
+# -i path_2_file : set input file from specific path
+# -movflags faststart : Run a second pass moving the index (moov atom) to the beginning of the file.  (no idea what it is doing :-D)
+# -pix_fmt yuv420p : set pixel format to “YUV” colour space with 4:2:0 chroma subsampling and planar colour alignment
+# Source: https://ffmpeg.org/ffmpeg.html
 
-# %% Run a subset
-# AB: Is this the code for running it on all of our MIT GIFs ? If yes please state. Ty
-# Sweep through videos in list # AB: which list?
+# %% Run conversion on the acquired list (l_videos)
+# Sweep through videos in list "l_videos"
 start = time.time()
 
 for i in range(len(l_videos)):
@@ -86,7 +107,7 @@ for i in range(len(l_videos)):
   cmd = ['ffmpeg', '-i', path_input_file,  '-movflags', 'faststart',
          '-pix_fmt', 'yuv420p', '-y', path_output_file]
   
-  # Run command
+  # Run command and check if any error is encountered during conversion
   if subprocess.call(cmd) != 0:
     raise Exception(f'Error while converting {category}/{file_name}!')
     
