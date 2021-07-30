@@ -18,6 +18,8 @@ __pycache__/
 temp/*
 !20210305_AB_ratorDistribution_qq1+qq2.csv
 !mifs_MIT_sampleVideos_RAW_final_25FPS_from-dict.csv
+!20210719_AB_fname_+_QQ-positioning.csv
+!20210729_concatenated_N1648_mifs.csv
 #!temp/ResNet50_MiTv1_accuracies_per_category.pkl
 
 # Ignore old scripts that were corrected AND/OR moved to "scripts" folder
