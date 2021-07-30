@@ -229,6 +229,9 @@ for index, row in subset.iterrows():
     # Define the number of frames to be extracted
     N_frames = int(fps * T)
 
+    """
+    TODO: Make sure to prevent negative indices!!! [OV, 30.07.21]
+    """
     # Define list with indices of frames ~ the position of the best frame
     l_best_begin = [i for i in range(best, best + N_frames)]                # MIF := beginning fram
     l_best_mid = [i for i in range(best - N_frames//2, best + N_frames//2)] # MIF := middle frame
