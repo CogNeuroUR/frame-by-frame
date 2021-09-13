@@ -194,7 +194,7 @@ start = time.time()
 T = 1.0 # time duration of the wanted segments (in seconds)
 # This is an important parameter
 # AB:  Change these if necessary
-path_output = Path(f'../input_data/MP4s/MIT_MP4s_25FPS_480x360p_{T}s_N=834/').absolute()
+path_output = Path(f'../input_data/MP4s/MIT_MP4s_25FPS_480x360p_{T}s_N=834_with_negatives/').absolute()
 path_2_dataset = Path(f'../input_data/MIT_combined_RAW_25FPS_480x360p/')
 
 utils.check_mkdir(path_output)
@@ -244,8 +244,13 @@ for index, row in mifs_positioning.iterrows(): # AB: Does this loop iterate e.g.
     if frames_list[0] < 0:
       print('Negative frames for ', [category, file_name])
       l_negative.append(row)
+      frames_list = [i for i in range(N_frames)]
       
-    else: # proceed normally
+      # Define output paths
+      path_output_category = path_output_negative / category
+      
+      # Create output category and file directories if not present
+      utils.check_mkdir(path_output_category)
       
       # Define codec
       fourcc = cv2.VideoWriter_fourcc(*'MP4V')
@@ -269,7 +274,31 @@ for index, row in mifs_positioning.iterrows(): # AB: Does this loop iterate e.g.
 
       cv2_vr.release()
       out.release()
+      
+    else: # proceed normally
+      # Define codec
+      fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+      # For a list of codecs, see:
+      # https://www.fourcc.org/codecs.php
 
+      # Create VideoWriter object.The output is stored in 'outpy.avi' file.
+      out = cv2.VideoWriter(str(path_output_category / file_name),
+                            fourcc,
+                            int(fps),
+                            (int(width), int(height)))
+
+      for frame_idx in frames_list:
+        cv2_vr.set(1, frame_idx)
+        _, frame = cv2_vr.read()
+        
+        #frame = cv2.resize(frame, (int(width), int(height)))
+        
+        # Write the frame into the file 'output.avi'
+        out.write(frame) 
+
+      cv2_vr.release()
+      out.release()
+      
 stop = time.time()
 duration = stop-start
 # runtime feedback to user
@@ -349,4 +378,120 @@ for index, row in mifs_positioning.iterrows():
       print('Filename: ', file_name)
       print('MIF index and position: ', mif_idx, mif_position)
       l_negative.append([category, file_name])
-# %%
+
+
+#%% ############################################################################
+# Extract ONLY NEGATIVE-FRAMED videos
+################################################################################
+#%% Load list for extraction
+path_csv_negative = Path('../input_data/MP4s/negative-framed/20210910_AB_n15_GIF(negFrames)_betterThanCorresp_MP4(frame0-30).csv')
+df_negatives = pd.read_csv(path_csv_negative, delimiter=';',
+                           usecols=[1,2,3,4])
+print(df_negatives)
+
+#%% Extraction
+# Check time for elapsed
+start = time.time()
+
+# Parameters: ==============================================
+T = 1.0 # time duration of the wanted segments (in seconds)
+# This is an important parameter
+path_output = Path(f'../input_data/MP4s/negative-framed/MIT_MP4s_25FPS_480x360p_{T}s_onlyNegatives/').absolute()
+path_2_dataset = Path(f'../input_data/MIT_combined_RAW_25FPS_480x360p/')
+
+utils.check_mkdir(path_output)
+
+l_negative = [] # for reporting files for which negative frame indexes were extracted
+
+# ==========================================================
+# Iterate over rows of mif dataframe 
+i=0
+for index, row in df_negatives.iterrows(): # AB: Does this loop iterate e.g. over all our MIT-vodeos? if yes please satet her additionaly
+  i+=1
+
+  print(f'{i}/{len(df_negatives)}')
+  # Extract category, filename, MIF idx and mif positioning
+  category, file_name, mif_idx, mif_position = row
+  
+  # Define output paths
+  path_output_category = path_output / category
+  
+  # Path to input file
+  path_2_file = path_2_dataset / category / file_name
+  
+  
+  # Load video file using decord
+  cv2_vr = cv2.VideoCapture(str(path_2_file))
+  fps = cv2_vr.get(cv2.CAP_PROP_FPS)
+  width = cv2_vr.get(cv2.CAP_PROP_FRAME_WIDTH)
+  height = cv2_vr.get(cv2.CAP_PROP_FRAME_HEIGHT)
+  frame_count = int(cv2_vr.get(cv2.CAP_PROP_FRAME_COUNT))
+
+  # Define list with indices of frames ~ the position of the best frame
+  N_frames = int(fps * T)
+  frames_list = None
+  if mif_position == '_b':
+    frames_list = [i for i in range(mif_idx, mif_idx + N_frames)]
+  if mif_position == '_m':
+    frames_list = [i for i in range(mif_idx - N_frames//2, mif_idx + N_frames//2)]
+  if mif_position == '_e':
+    frames_list = [i for i in range(mif_idx - N_frames, mif_idx)]
+  
+  frames_list = np.array([i for i in range(frame_count)])[frames_list].tolist()
+  
+  # Create output category and file directories if not present
+  utils.check_mkdir(path_output_category)
+  
+  # Define codec
+  fourcc = cv2.VideoWriter_fourcc(*'MP4V')
+  # For a list of codecs, see:
+  # https://www.fourcc.org/codecs.php
+
+  # Create VideoWriter object.The output is stored in 'outpy.avi' file.
+  out = cv2.VideoWriter(str(path_output_category / file_name),
+                        fourcc,
+                        int(fps),
+                        (int(width), int(height)))
+
+  for frame_idx in frames_list:
+    cv2_vr.set(1, frame_idx)
+    _, frame = cv2_vr.read()
+    
+    #frame = cv2.resize(frame, (int(width), int(height)))
+    
+    # Write the frame into the file 'output.avi'
+    out.write(frame) 
+
+  cv2_vr.release()
+  out.release()
+    
+stop = time.time()
+duration = stop-start
+# runtime feedback to user
+print(f'\nTime spent: {duration:.2f}s (~ {duration/i:.3f}s per file)')
+print(f'Negative frames found for {len(l_negative)} files!')
+
+
+#%% Write report
+# Save mifs csv used
+mifs_positioning.to_csv(path_output / 'mifs_positioning.csv')
+# Save list with files found with negative frames
+pd.DataFrame(l_negative,
+             columns=['category', 'fname', 'mif_idx', 'mif_position']).to_csv(
+               path_output / 'mifs_negative_frames.csv'
+             )
+             
+
+#%% Sweep through files in subfolders of path_input
+l_videos = []
+for path, subdirs, files in os.walk(path_output):
+  for name in files:
+    if name[-3:] == 'mp4':
+      l_videos.append([path.split('/')[-1],   # category
+                       name])                 # file name
+    else:
+      print('Ignored: ', name)
+
+if l_videos:
+  l_videos = sorted(l_videos)
+print('Total nr. of MP4s: ', len(l_videos))
